@@ -7,6 +7,7 @@ import RegisterPage from "./auth/RegisterPage";
 
 function App() {
   console.log(process.env.NODE_ENV);
+  console.log(process.env.REACT_APP_BACKEND_APP_API_URL);
   return (
     <Router>
       <Routes>
