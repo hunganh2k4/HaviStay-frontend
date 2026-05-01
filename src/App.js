@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./home/HomePage";
+import PropertyDetailPage from "./properties/DetailPropertiesPage";
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <Routes>
         {/* Định nghĩa đường dẫn mặc định là trang Home */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/properties" element={<PropertyDetailPage />} />
 
         {/* Bạn có thể thêm các route khác ở đây sau này */}
         {/* <Route path="/about" element={<About />} /> */}

@@ -1,0 +1,122 @@
+import React, { useState, useEffect } from "react";
+import { Search, Globe, Menu } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+export default function Header() {
+  const navigate = useNavigate();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <header 
+      className={`sticky top-0 z-50 bg-white transition-all duration-300 border-b ${
+        isScrolled ? "py-1 shadow-md border-gray-100" : "py-0 border-gray-50"
+      } antialiased`}
+    >
+      {/* Top Row */}
+      <div className="flex items-center justify-between px-6 md:px-12 py-3 transition-all duration-300">
+        {/* Logo */}
+        <div 
+          onClick={() => navigate("/")}
+          className="text-2xl font-bold text-rose-500 tracking-tight cursor-pointer"
+        >
+          HaviStay
+        </div>
+
+        {/* Navigation & Compact Search Transition */}
+        <div className="flex-1 flex justify-center px-4">
+          <div className="relative w-full max-w-md flex justify-center">
+            {/* Middle Nav Links (Visible when NOT scrolled) */}
+            <nav 
+              className={`flex items-center gap-8 text-sm font-semibold text-gray-500 transition-all duration-300 ${
+                isScrolled ? "opacity-0 scale-95 pointer-events-none absolute" : "opacity-100 scale-100"
+              }`}
+            >
+              <div className="text-black border-b-2 border-black pb-1 cursor-pointer">
+                Nơi lưu trú
+              </div>
+              <div className="hover:text-black cursor-pointer transition">
+                Trải nghiệm
+              </div>
+              <div className="hover:text-black cursor-pointer transition">
+                Dịch vụ
+              </div>
+            </nav>
+
+            {/* Compact Search Bar (Visible when scrolled) */}
+            <div 
+              className={`flex border rounded-full shadow-sm px-4 py-1.5 items-center gap-4 hover:shadow-md transition-all duration-300 cursor-pointer ${
+                isScrolled ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none absolute"
+              }`}
+            >
+              <span className="text-sm font-semibold">Địa điểm bất kỳ</span>
+              <span className="text-gray-200">|</span>
+              <span className="text-sm font-semibold">Tuần bất kỳ</span>
+              <span className="text-gray-200">|</span>
+              <span className="text-sm text-gray-500">Thêm khách</span>
+              <button className="bg-rose-500 text-white p-1.5 rounded-full">
+                <Search size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section */}
+        <div className="flex items-center gap-3">
+          <span className="hidden md:block text-sm font-semibold hover:bg-gray-50 px-3 py-2 rounded-full cursor-pointer transition">
+            Trở thành host
+          </span>
+
+          <button className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:shadow-md transition">
+            <Globe size={16} />
+          </button>
+
+          <button className="flex items-center gap-2 border border-gray-200 pl-3 pr-2 py-1.5 rounded-full hover:shadow-md transition bg-white">
+            <Menu size={16} />
+            <div className="w-7 h-7 bg-gray-500 rounded-full"></div>
+          </button>
+        </div>
+      </div>
+
+      {/* Second Row (Large Search Bar - Visible when NOT scrolled) */}
+      <div 
+        className={`px-6 md:px-12 pb-4 transition-all duration-300 origin-top ${
+          isScrolled ? "h-0 opacity-0 pointer-events-none -translate-y-4" : "h-auto opacity-100 translate-y-0"
+        }`}
+      >
+        <div className="max-w-3xl mx-auto bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg transition flex flex-col md:flex-row items-center overflow-hidden">
+          <div className="flex-1 px-6 py-2.5 border-b md:border-b-0 md:border-r hover:bg-gray-100 cursor-pointer transition">
+            <p className="font-bold text-[11px] uppercase tracking-wider">Địa điểm</p>
+            <p className="text-gray-500 text-sm">Tìm kiếm điểm đến</p>
+          </div>
+
+          <div className="flex-1 px-6 py-2.5 border-b md:border-b-0 md:border-r hover:bg-gray-100 cursor-pointer transition">
+            <p className="font-bold text-[11px] uppercase tracking-wider">Thời gian</p>
+            <p className="text-gray-500 text-sm">Thêm ngày</p>
+          </div>
+
+          <div className="flex-1 px-6 py-2.5 hover:bg-gray-100 cursor-pointer transition">
+            <p className="font-bold text-[11px] uppercase tracking-wider">Khách</p>
+            <p className="text-gray-500 text-sm">Thêm khách</p>
+          </div>
+
+          <button className="m-1.5 bg-rose-500 hover:bg-rose-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition">
+            <Search size={18} />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}

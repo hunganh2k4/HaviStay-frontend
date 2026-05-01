@@ -1,12 +1,7 @@
 import React from "react";
 import "../index.css";
-import {
-  Search,
-  Globe,
-  Menu,
-  Heart,
-  ChevronRight,
-} from "lucide-react";
+import { Heart, ChevronRight } from "lucide-react";
+import Header from "../components/Header";
 
 /* =========================
    DATA
@@ -132,77 +127,7 @@ const Section = ({ title, items }) => (
 export default function HomePage() {
   return (
     <div className="bg-white min-h-screen text-gray-900 antialiased">
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
-        {/* Top */}
-        <div className="flex items-center justify-between px-6 md:px-12 py-4">
-          {/* Logo */}
-          <div className="text-2xl font-bold text-rose-500 tracking-tight cursor-pointer">
-            HaviStay
-          </div>
-
-          {/* Nav */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-500">
-            <div className="text-black border-b-2 border-black pb-1">
-              Nơi lưu trú
-            </div>
-            <div className="hover:text-black cursor-pointer transition">
-              Trải nghiệm
-            </div>
-            <div className="hover:text-black cursor-pointer transition">
-              Dịch vụ
-            </div>
-          </nav>
-
-          {/* Right */}
-          <div className="flex items-center gap-3">
-            <span className="hidden md:block text-sm font-semibold hover:bg-gray-50 px-3 py-2 rounded-full cursor-pointer transition">
-              Trở thành host
-            </span>
-
-            <button className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:shadow-md transition">
-              <Globe size={16} />
-            </button>
-
-            <button className="flex items-center gap-2 border border-gray-200 pl-3 pr-2 py-1.5 rounded-full hover:shadow-md transition bg-white">
-              <Menu size={16} />
-              <div className="w-7 h-7 bg-gray-500 rounded-full"></div>
-            </button>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="px-6 md:px-12 pb-4">
-          <div className="max-w-3xl mx-auto bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg transition flex flex-col md:flex-row items-center overflow-hidden">
-            <div className="flex-1 px-6 py-2.5 border-b md:border-b-0 md:border-r hover:bg-gray-100 cursor-pointer transition">
-              <p className="font-bold text-[11px] uppercase tracking-wider">
-                Địa điểm
-              </p>
-              <p className="text-gray-500 text-sm">
-                Tìm kiếm điểm đến
-              </p>
-            </div>
-
-            <div className="flex-1 px-6 py-2.5 border-b md:border-b-0 md:border-r hover:bg-gray-100 cursor-pointer transition">
-              <p className="font-bold text-[11px] uppercase tracking-wider">
-                Thời gian
-              </p>
-              <p className="text-gray-500 text-sm">Thêm ngày</p>
-            </div>
-
-            <div className="flex-1 px-6 py-2.5 hover:bg-gray-100 cursor-pointer transition">
-              <p className="font-bold text-[11px] uppercase tracking-wider">
-                Khách
-              </p>
-              <p className="text-gray-500 text-sm">Thêm khách</p>
-            </div>
-
-            <button className="m-1.5 bg-rose-500 hover:bg-rose-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition">
-              <Search size={18} />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* BODY */}
       <Section
