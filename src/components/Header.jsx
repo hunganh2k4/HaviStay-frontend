@@ -83,10 +83,71 @@ export default function Header() {
             <Globe size={16} />
           </button>
 
-          <button className="flex items-center gap-2 border border-gray-200 pl-3 pr-2 py-1.5 rounded-full hover:shadow-md transition bg-white">
-            <Menu size={16} />
-            <div className="w-7 h-7 bg-gray-500 rounded-full"></div>
-          </button>
+          <div className="relative group">
+            <button className="flex items-center gap-2 border border-gray-200 pl-3 pr-2 py-1.5 rounded-full hover:shadow-md transition bg-white">
+              <Menu size={16} />
+              {localStorage.getItem("user") ? (
+                <div className="w-7 h-7 bg-rose-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold uppercase overflow-hidden">
+                  {JSON.parse(localStorage.getItem("user")).avatar ? (
+                    <img src={JSON.parse(localStorage.getItem("user")).avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    JSON.parse(localStorage.getItem("user")).name.charAt(0)
+                  )}
+                </div>
+              ) : (
+                <div className="w-7 h-7 bg-gray-500 rounded-full"></div>
+              )}
+            </button>
+
+            {/* User Dropdown Menu */}
+            <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] py-2">
+              {!localStorage.getItem("user") ? (
+                <>
+                  <div 
+                    onClick={() => navigate("/login")}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer font-semibold text-sm"
+                  >
+                    Đăng nhập
+                  </div>
+                  <div 
+                    onClick={() => navigate("/register")}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm text-gray-600"
+                  >
+                    Đăng ký
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="px-4 py-3 border-b border-gray-100 mb-1">
+                    <p className="text-sm font-bold truncate">{JSON.parse(localStorage.getItem("user")).name}</p>
+                    <p className="text-xs text-gray-500 truncate">{JSON.parse(localStorage.getItem("user")).email}</p>
+                  </div>
+                  <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold">
+                    Tin nhắn
+                  </div>
+                  <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold">
+                    Chuyến đi
+                  </div>
+                  <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold border-b border-gray-100 mb-1">
+                    Danh sách yêu thích
+                  </div>
+                  <div 
+                    onClick={() => {
+                      localStorage.removeItem("access_token");
+                      localStorage.removeItem("user");
+                      window.location.reload();
+                    }}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm text-rose-500 font-semibold"
+                  >
+                    Đăng xuất
+                  </div>
+                </>
+              )}
+              <div className="px-4 py-3 border-t border-gray-100 mt-1 hover:bg-gray-50 cursor-pointer text-sm">
+                Trung tâm trợ giúp
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

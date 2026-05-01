@@ -24,3 +24,10 @@ yarn-error.log*
 
 .vercel
 .env*.local
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+
