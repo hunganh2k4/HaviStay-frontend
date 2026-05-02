@@ -4,6 +4,9 @@ import HomePage from "./home/HomePage";
 import PropertyDetailPage from "./properties/DetailPropertiesPage";
 import LoginPage from "./auth/LoginPage";
 import RegisterPage from "./auth/RegisterPage";
+import BecomeHostPage from "./auth/BecomeHostPage";
+import ManagePropertiesPage from "./properties/ManagePropertiesPage";
+import CreatePropertyPage from "./properties/CreatePropertyPage";
 
 function App() {
   console.log(process.env.NODE_ENV);
@@ -16,6 +19,9 @@ function App() {
         <Route path="/properties" element={<PropertyDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/become-a-host" element={<BecomeHostPage />} />
+        <Route path="/host/properties" element={<ManagePropertiesPage />} />
+        <Route path="/host/properties/create" element={<CreatePropertyPage />} />
 
         {/* Bạn có thể thêm các route khác ở đây sau này */}
         {/* <Route path="/about" element={<About />} /> */}

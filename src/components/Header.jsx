@@ -75,8 +75,23 @@ export default function Header() {
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
-          <span className="hidden md:block text-sm font-semibold hover:bg-gray-50 px-3 py-2 rounded-full cursor-pointer transition">
-            Trở thành host
+          <span 
+            onClick={() => {
+              const userData = localStorage.getItem("user");
+              if (userData) {
+                const user = JSON.parse(userData);
+                if (user.role === "HOST" || user.role === "ADMIN") {
+                  navigate("/host/properties");
+                } else {
+                  navigate("/become-a-host");
+                }
+              } else {
+                navigate("/login");
+              }
+            }}
+            className="hidden md:block text-sm font-semibold hover:bg-gray-50 px-3 py-2 rounded-full cursor-pointer transition"
+          >
+            {localStorage.getItem("user") && (JSON.parse(localStorage.getItem("user")).role === "HOST" || JSON.parse(localStorage.getItem("user")).role === "ADMIN") ? "Quản lý chỗ nghỉ" : "Trở thành host"}
           </span>
 
           <button className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:shadow-md transition">
@@ -128,6 +143,14 @@ export default function Header() {
                   <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold">
                     Chuyến đi
                   </div>
+                  {(JSON.parse(localStorage.getItem("user")).role === "HOST" || JSON.parse(localStorage.getItem("user")).role === "ADMIN") && (
+                    <div 
+                      onClick={() => navigate("/host/properties")}
+                      className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-bold text-rose-500"
+                    >
+                      Quản lý chỗ nghỉ
+                    </div>
+                  )}
                   <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold border-b border-gray-100 mb-1">
                     Danh sách yêu thích
                   </div>
