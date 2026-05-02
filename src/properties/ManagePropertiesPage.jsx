@@ -156,7 +156,7 @@ export default function ManagePropertiesPage() {
                   <div className="relative w-24 h-24 md:w-20 md:h-20 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0">
                     <img
                       src={property.images && property.images.length > 0
-                        ? (property.images[0].startsWith('http') ? property.images[0] : `${API_URL.replace('/api', '')}/uploads/${property.images[0]}`)
+                        ? property.images[0]
                         : "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop"
                       }
                       alt={property.title}
@@ -177,8 +177,8 @@ export default function ManagePropertiesPage() {
                 {/* Status Section */}
                 <div className="col-span-2 flex justify-center">
                   <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${property.isPublished
-                      ? "bg-green-50 text-green-600"
-                      : "bg-gray-50 text-gray-400"
+                    ? "bg-green-50 text-green-600"
+                    : "bg-gray-50 text-gray-400"
                     }`}>
                     {property.isPublished ? <Eye size={12} /> : <EyeOff size={12} />}
                     {property.isPublished ? "Đang hiển thị" : "Đã ẩn"}
