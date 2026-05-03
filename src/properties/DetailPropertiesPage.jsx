@@ -29,6 +29,7 @@ export default function PropertyDetailPage() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isBooking, setIsBooking] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   // Date selection state (simulated)
   const [startDate, setStartDate] = useState(15);
@@ -61,6 +62,13 @@ export default function PropertyDetailPage() {
             const wishData = await wishRes.json();
             setIsWishlisted(wishData.isWishlisted);
           }
+        }
+
+        // Fetch reviews
+        const reviewRes = await fetch(`${API_URL}/reviews/property/${id}`);
+        if (reviewRes.ok) {
+          const reviewData = await reviewRes.json();
+          setReviews(reviewData);
         }
       } catch (error) {
         console.error(error);
@@ -204,7 +212,7 @@ export default function PropertyDetailPage() {
             <button className="flex items-center gap-2 underline hover:bg-gray-50 px-2 py-1 rounded-md transition">
               <Share size={16} /> Chia sẻ
             </button>
-            <button 
+            <button
               onClick={toggleWishlist}
               className={`flex items-center gap-2 underline hover:bg-gray-50 px-2 py-1 rounded-md transition ${isWishlisted ? "text-rose-500" : ""}`}
             >
@@ -382,22 +390,64 @@ export default function PropertyDetailPage() {
 
             {/* REVIEWS */}
             <div className="py-8 border-b">
-              <h2 className="text-xl font-bold mb-6">★ 4,76 · 146 đánh giá</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="font-bold text-sm mb-1">Thị Phương Anh</h3>
-                  <p className="text-xs text-gray-500 mb-2">tháng 3 năm 2026</p>
-                  <p className="text-sm leading-6 text-gray-700">Đây là một chỗ ở rất tuyệt vời, mình chắc chắn sẽ recommend cho bạn bè...</p>
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm mb-1">Akerke</h3>
-                  <p className="text-xs text-gray-500 mb-2">3 tuần trước</p>
-                  <p className="text-sm leading-6 text-gray-700">Nhìn chung, đó là một nơi tuyệt vời so với chi phí...</p>
-                </div>
+              <div className="flex items-center gap-2 mb-6">
+                <Star size={20} fill="currentColor" />
+                <h2 className="text-xl font-bold">
+                  {reviews.length > 0
+                    ? `${(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)} · ${reviews.length} đánh giá`
+                    : "Chưa có đánh giá"}
+                </h2>
               </div>
-              <button className="mt-8 px-6 py-2.5 border border-black rounded-lg font-bold text-sm hover:bg-gray-50 transition">
-                Hiển thị tất cả 146 đánh giá
-              </button>
+
+              {reviews.length === 0 ? (
+                <p className="text-gray-500 italic text-sm">Chưa có đánh giá nào cho chỗ nghỉ này. Hãy là người đầu tiên trải nghiệm!</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {reviews.slice(0, 6).map((review) => (
+                    <div key={review.id} className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center overflow-hidden">
+                          {review.user?.avatar ? (
+                            <img src={review.user.avatar} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-rose-500 font-bold text-sm">{review.user?.name?.[0]}</span>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-sm">{review.user?.name}</h3>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase">
+                            {new Date(review.createdAt).toLocaleDateString("vi-VN", { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-0.5 text-rose-500">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={12} fill={i < review.rating ? "currentColor" : "none"} />
+                        ))}
+                      </div>
+
+                      <p className="text-sm leading-6 text-gray-700 line-clamp-3">{review.comment}</p>
+
+                      {review.images?.length > 0 && (
+                        <div className="flex gap-2 mt-2">
+                          {review.images.slice(0, 3).map((img, i) => (
+                            <div key={i} className="w-16 h-16 rounded-lg overflow-hidden border border-gray-100">
+                              <img src={img} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {reviews.length > 6 && (
+                <button className="mt-8 px-6 py-2.5 border border-black rounded-lg font-bold text-sm hover:bg-gray-50 transition">
+                  Hiển thị tất cả {reviews.length} đánh giá
+                </button>
+              )}
             </div>
           </div>
 
@@ -431,8 +481,8 @@ export default function PropertyDetailPage() {
                   </div>
                 </div>
 
-                <button 
-                  disabled={!selectedRoom || !endDate || isBooking} 
+                <button
+                  disabled={!selectedRoom || !endDate || isBooking}
                   onClick={handleBooking}
                   className={`w-full py-3 rounded-xl text-base font-bold transition shadow-lg flex items-center justify-center gap-2 ${selectedRoom && endDate ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white hover:opacity-90" : "bg-gray-200 text-gray-400"}`}
                 >

@@ -7,9 +7,12 @@ import {
   Clock,
   ChevronRight,
   Search,
-  Inbox
+  Inbox,
+  Star,
+  X
 } from "lucide-react";
 import Header from "../components/Header";
+import ReviewModal from "../components/ReviewModal";
 import API_URL from "../config/config";
 
 export default function MyTripsPage() {
@@ -17,6 +20,7 @@ export default function MyTripsPage() {
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
 
   useEffect(() => {
     fetchMyTrips();
@@ -42,6 +46,24 @@ export default function MyTripsPage() {
       setError(err.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteReview = async (e, reviewId) => {
+    e.stopPropagation();
+    if (!window.confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) return;
+
+    try {
+      const response = await fetch(`${API_URL}/reviews/${reviewId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Không thể xóa đánh giá.");
+
+      fetchMyTrips(); // Refresh
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -173,12 +195,52 @@ export default function MyTripsPage() {
                       {booking.status === "CONFIRMED" ? "Đã thanh toán" : "Chưa thanh toán"}
                     </div>
                   </div>
+
+                  {booking.status === "CONFIRMED" && (
+                    <div className="mt-4 pt-4 border-t border-gray-50 flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedBookingForReview(booking);
+                        }}
+                        className={`flex-1 py-2.5 border text-xs font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${booking.isReviewed
+                            ? "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                            : "bg-white border-rose-500 text-rose-500 hover:bg-rose-50"
+                          }`}
+                      >
+                        <Star size={14} fill={booking.isReviewed ? "currentColor" : "none"} />
+                        {booking.isReviewed ? "Sửa đánh giá" : "Viết đánh giá"}
+                      </button>
+
+                      {booking.isReviewed && (
+                        <button
+                          onClick={(e) => handleDeleteReview(e, booking.reviewId)}
+                          className="px-4 py-2.5 bg-gray-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                          title="Xóa đánh giá"
+                        >
+                          <X size={16} />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
       </main>
+
+      {selectedBookingForReview && (
+        <ReviewModal
+          booking={selectedBookingForReview}
+          onClose={() => setSelectedBookingForReview(null)}
+          onSuccess={() => {
+            // Optional: refresh trips or show success toast
+            setSelectedBookingForReview(null);
+            fetchMyTrips();
+          }}
+        />
+      )}
     </div>
   );
 }
