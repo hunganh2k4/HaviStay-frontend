@@ -12,6 +12,7 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const hostId = queryParams.get("hostId");
+  const propertyId = queryParams.get("propertyId");
 
   useEffect(() => {
     console.log("Current URL Search:", location.search);
@@ -41,7 +42,11 @@ export default function ChatPage() {
 
       if (hostId) {
         try {
-          const response = await fetch(`${API_URL}/chat/find-or-create/${hostId}`, {
+          const url = propertyId 
+            ? `${API_URL}/chat/find-or-create/${hostId}?propertyId=${propertyId}`
+            : `${API_URL}/chat/find-or-create/${hostId}`;
+
+          const response = await fetch(url, {
             credentials: "include",
           });
           if (response.ok) {
@@ -190,7 +195,9 @@ export default function ChatPage() {
         {/* SIDEBAR - Conversations */}
         <div className={`w-full lg:w-[400px] bg-white rounded-[32px] border border-gray-100 shadow-sm flex flex-col overflow-hidden transition-all duration-300 ${selectedConversation ? "hidden lg:flex" : "flex"}`}>
           <div className="p-6 border-b border-gray-50">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Tin nhắn</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-6">
+              {currentUser?.role === "HOST" ? "Quản lý tin nhắn" : "Tin nhắn"}
+            </h1>
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
@@ -230,19 +237,24 @@ export default function ChatPage() {
                       )}
                       <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-baseline mb-1">
-                        <h3 className={`font-bold text-sm truncate ${isSelected ? "text-rose-600" : "text-gray-900"}`}>
-                          {partner?.name}
-                        </h3>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase">
-                          {lastMsg ? new Date(lastMsg.createdAt).toLocaleDateString("vi-VN") : ""}
-                        </span>
-                      </div>
-                      <p className={`text-xs truncate ${lastMsg?.isRead === false && lastMsg.senderId !== currentUser?.id ? "font-bold text-gray-900" : "text-gray-500"}`}>
-                        {lastMsg ? lastMsg.content : "Bắt đầu cuộc trò chuyện..."}
-                      </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <h3 className={`font-bold text-sm truncate ${isSelected ? "text-rose-600" : "text-gray-900"}`}>
+                        {partner?.name}
+                      </h3>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase">
+                        {lastMsg ? new Date(lastMsg.createdAt).toLocaleDateString("vi-VN") : ""}
+                      </span>
                     </div>
+                    {conv.property && (
+                      <p className="text-[10px] font-bold text-rose-500 uppercase truncate mb-1">
+                        {conv.property.title}
+                      </p>
+                    )}
+                    <p className={`text-xs truncate ${lastMsg?.isRead === false && lastMsg.senderId !== currentUser?.id ? "font-bold text-gray-900" : "text-gray-500"}`}>
+                      {lastMsg ? lastMsg.content : "Bắt đầu cuộc trò chuyện..."}
+                    </p>
+                  </div>
                   </div>
                 );
               })
@@ -273,10 +285,17 @@ export default function ChatPage() {
                   </div>
                   <div>
                     <h2 className="font-bold text-gray-900">{getPartner(selectedConversation)?.name}</h2>
-                    <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                      Đang hoạt động
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                        Đang hoạt động
+                      </p>
+                      {selectedConversation.property && (
+                        <span className="text-[10px] font-bold text-rose-500 uppercase bg-rose-50 px-2 py-0.5 rounded-full">
+                          {selectedConversation.property.title}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <button className="p-2.5 hover:bg-gray-50 rounded-full text-gray-400 transition-all">

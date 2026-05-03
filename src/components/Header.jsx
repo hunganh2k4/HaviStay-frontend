@@ -20,6 +20,31 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      const user = localStorage.getItem("user");
+      if (!user) return;
+
+      try {
+        const response = await fetch(`${API_URL}/chat/unread-count`, {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const count = await response.json();
+          setUnreadCount(count);
+        }
+      } catch (err) {
+        console.error("Error fetching unread count:", err);
+      }
+    };
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <header 
       className={`sticky top-0 z-50 bg-white transition-all duration-300 border-b ${
@@ -157,9 +182,14 @@ export default function Header() {
                   )}
                   <div 
                     onClick={() => navigate("/messages")}
-                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold border-b border-gray-100 mb-1"
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold border-b border-gray-100 mb-1 flex items-center justify-between"
                   >
-                    Tin nhắn
+                    <span>Tin nhắn</span>
+                    {unreadCount > 0 && (
+                      <span className="w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
                   </div>
                   <div 
                     onClick={() => navigate("/wishlist")}

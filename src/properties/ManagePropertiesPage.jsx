@@ -9,7 +9,8 @@ import {
   ExternalLink,
   MapPin,
   Eye,
-  EyeOff
+  EyeOff,
+  MessageSquare,
 } from "lucide-react";
 import API_URL from "../config/config";
 import Header from "../components/Header";
@@ -107,13 +108,22 @@ export default function ManagePropertiesPage() {
             <p className="text-gray-500 text-sm mt-1">Danh sách các bất động sản bạn đang vận hành trên HaviStay.</p>
           </div>
 
-          <button
-            onClick={() => navigate("/host/properties/create")}
-            className="flex items-center gap-2 px-6 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-rose-100 active:scale-95"
-          >
-            <Plus size={20} />
-            <span className="text-sm">Tạo chỗ nghỉ mới</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/messages")}
+              className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 hover:border-rose-500 hover:text-rose-500 text-gray-700 font-bold rounded-2xl transition-all shadow-sm active:scale-95"
+            >
+              <MessageSquare size={20} />
+              <span className="text-sm">Tin nhắn</span>
+            </button>
+            <button
+              onClick={() => navigate("/host/properties/create")}
+              className="flex items-center gap-2 px-6 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-rose-100 active:scale-95"
+            >
+              <Plus size={20} />
+              <span className="text-sm">Tạo chỗ nghỉ mới</span>
+            </button>
+          </div>
         </div>
 
         {/* Content Section */}

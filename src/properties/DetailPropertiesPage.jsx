@@ -274,8 +274,8 @@ export default function PropertyDetailPage() {
               <button 
                 onClick={() => {
                   if (property?.host?.id) {
-                    // Start a conversation with host
-                    navigate(`/messages?hostId=${property.host.id}`);
+                    // Start a conversation with host about this specific property
+                    navigate(`/messages?hostId=${property.host.id}&propertyId=${property.id}`);
                   } else {
                     navigate("/login");
                   }
