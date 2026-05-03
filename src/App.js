@@ -7,6 +7,8 @@ import RegisterPage from "./auth/RegisterPage";
 import BecomeHostPage from "./auth/BecomeHostPage";
 import ManagePropertiesPage from "./properties/ManagePropertiesPage";
 import CreatePropertyPage from "./properties/CreatePropertyPage";
+import EditPropertyPage from "./properties/EditPropertyPage";
+import ManageRoomsPage from "./properties/ManageRoomsPage";
 import AdminDashboard from "./admin/AdminDashboard";
 import { useEffect } from "react";
 
@@ -40,12 +42,14 @@ function App() {
       <Routes>
         {/* Định nghĩa đường dẫn mặc định là trang Home */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/properties" element={<PropertyDetailPage />} />
+        <Route path="/properties/:id" element={<PropertyDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/become-a-host" element={<BecomeHostPage />} />
         <Route path="/host/properties" element={<ManagePropertiesPage />} />
         <Route path="/host/properties/create" element={<CreatePropertyPage />} />
+        <Route path="/host/properties/:id/edit" element={<EditPropertyPage />} />
+        <Route path="/host/properties/:id/rooms" element={<ManageRoomsPage />} />
         
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 

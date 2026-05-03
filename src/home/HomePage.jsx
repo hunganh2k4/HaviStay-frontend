@@ -1,10 +1,13 @@
 import React from "react";
 import "../index.css";
-import { Heart, ChevronRight } from "lucide-react";
+import { Heart, ChevronRight, Star } from "lucide-react";
 import Header from "../components/Header";
+import { useState, useEffect } from "react";
+import API_URL from "../config/config";
+import { useNavigate } from "react-router-dom";
 
 /* =========================
-   DATA
+   MOCK DATA
 ========================= */
 const staysHanoi = [
   {
@@ -65,71 +68,86 @@ const staysSeoul = [
   })),
 ];
 
-
-/* =========================
-   SECTION - 7 ITEMS NGANG
-========================= */
-const Section = ({ title, items }) => (
-  <section className="px-6 md:px-12 py-6">
-    {/* Header */}
-    <div className="flex items-center gap-2 mb-4">
-      <h2 className="text-xl md:text-2xl font-bold whitespace-nowrap">
-        {title}
-      </h2>
-
-      <button className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
-        <ChevronRight size={20} />
-      </button>
-    </div>
-
-    {/* 7 item cùng 1 hàng */}
-    <div className="grid grid-cols-7 gap-4">
-      {items.slice(0, 7).map((item, index) => (
-        <div key={index} className="w-full min-w-0">
-          <div className="cursor-pointer group">
-            {/* Image */}
-            <div className="relative overflow-hidden rounded-2xl aspect-[3/4]">
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-              />
-
-              <span className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-[10px] font-bold shadow">
-                {item.badge}
-              </span>
-
-              <button className="absolute top-2 right-2 bg-white/90 p-1.5 rounded-full shadow hover:bg-white transition">
-                <Heart size={14} />
-              </button>
-            </div>
-
-            {/* Info */}
-            <div className="mt-2">
-              <h3 className="font-semibold text-xs line-clamp-2">
-                {item.title}
-              </h3>
-
-              <p className="text-gray-500 text-[11px] line-clamp-2">
-                {item.price}
-              </p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
-);
-
 /* =========================
    MAIN APP
 ========================= */
 export default function HomePage() {
+  const [properties, setProperties] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const response = await fetch(`${API_URL}/properties`);
+        if (!response.ok) throw new Error("Failed to fetch properties");
+        const data = await response.json();
+        setProperties(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProperties();
+  }, []);
+
+  const Section = ({ title, items, isRealData = false }) => (
+    <section className="px-6 md:px-12 py-6">
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="text-xl md:text-2xl font-bold whitespace-nowrap">{title}</h2>
+        <button className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+          <ChevronRight size={20} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        {items.slice(0, 7).map((item, index) => (
+          <div 
+            key={item.id || index} 
+            className="w-full min-w-0 cursor-pointer group"
+            onClick={() => isRealData && item.id && navigate(`/properties/${item.id}`)}
+          >
+            <div className="relative overflow-hidden rounded-2xl aspect-[3/4]">
+              <img
+                src={isRealData ? (item.images?.[0] || "https://images.unsplash.com/photo-1512917774080-9991f1c4c750") : item.image}
+                alt={item.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+              />
+              <span className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-[10px] font-bold shadow">
+                {isRealData ? "Xác thực" : item.badge}
+              </span>
+              <button className="absolute top-2 right-2 bg-white/90 p-1.5 rounded-full shadow hover:bg-white transition">
+                <Heart size={14} />
+              </button>
+            </div>
+            <div className="mt-2">
+              <h3 className="font-semibold text-xs line-clamp-2">{item.title}</h3>
+              <p className="text-gray-500 text-[11px] line-clamp-2">
+                {isRealData 
+                  ? `₫${item.rooms?.[0]?.pricePerNight?.toLocaleString() || "---"} / đêm` 
+                  : item.price}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+
   return (
     <div className="bg-white min-h-screen text-gray-900 antialiased">
       <Header />
 
-      {/* BODY */}
+      {/* Real Properties Section */}
+      {!isLoading && properties.length > 0 && (
+        <Section 
+          title="Nơi lưu trú nổi bật" 
+          items={properties} 
+          isRealData={true} 
+        />
+      )}
+
       <Section
         title="Nơi lưu trú được ưa chuộng tại Hà Nội"
         items={staysHanoi}
