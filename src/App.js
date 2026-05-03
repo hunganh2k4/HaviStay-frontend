@@ -7,10 +7,33 @@ import RegisterPage from "./auth/RegisterPage";
 import BecomeHostPage from "./auth/BecomeHostPage";
 import ManagePropertiesPage from "./properties/ManagePropertiesPage";
 import CreatePropertyPage from "./properties/CreatePropertyPage";
+import { useEffect } from "react";
+
+import { startIdleLogout } from "./utils/idleLogout";
+import { handleUnauthorized } from "./utils/api";
 
 function App() {
   console.log(process.env.NODE_ENV);
   console.log(process.env.REACT_APP_BACKEND_APP_API_URL);
+
+   useEffect(() => {
+    const stopIdleLogout = startIdleLogout(async () => {
+      handleUnauthorized();
+
+      localStorage.removeItem("user");
+
+      // Chỉ logout nếu chưa ở login
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    });
+
+    // Cleanup khi unmount
+    return () => {
+      stopIdleLogout();
+    };
+  }, []);
+
   return (
     <Router>
       <Routes>

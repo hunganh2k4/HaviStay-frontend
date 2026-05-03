@@ -21,6 +21,7 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Include cookies in request
         body: JSON.stringify({ email, password }),
       });
 
@@ -30,8 +31,7 @@ export default function LoginPage() {
         throw new Error(data.message || "Đăng nhập thất bại");
       }
 
-      // Store auth data
-      localStorage.setItem("access_token", data.access_token);
+      // Store only user data (tokens are in HttpOnly cookies)
       localStorage.setItem("user", JSON.stringify(data.user));
 
       // Redirect to home

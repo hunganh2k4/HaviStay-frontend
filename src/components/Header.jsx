@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Globe, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../config/config";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -155,10 +156,21 @@ export default function Header() {
                     Danh sách yêu thích
                   </div>
                   <div 
-                    onClick={() => {
-                      localStorage.removeItem("access_token");
-                      localStorage.removeItem("user");
-                      window.location.reload();
+                    onClick={async () => {
+                      try {
+                        await fetch(`${API_URL || "http://localhost:5000/api"}/auth/logout`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          credentials: "include", // Send cookies
+                        });
+                      } catch (err) {
+                        console.error("Logout error:", err);
+                      } finally {
+                        localStorage.removeItem("user");
+                        window.location.reload();
+                      }
                     }}
                     className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm text-rose-500 font-semibold"
                   >
