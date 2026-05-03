@@ -10,6 +10,8 @@ import CreatePropertyPage from "./properties/CreatePropertyPage";
 import EditPropertyPage from "./properties/EditPropertyPage";
 import ManageRoomsPage from "./properties/ManageRoomsPage";
 import AdminDashboard from "./admin/AdminDashboard";
+import PaymentResultPage from "./payments/PaymentResultPage";
+import MyTripsPage from "./trips/MyTripsPage";
 import { useEffect } from "react";
 
 import { startIdleLogout } from "./utils/idleLogout";
@@ -19,7 +21,7 @@ function App() {
   console.log(process.env.NODE_ENV);
   console.log(process.env.REACT_APP_BACKEND_APP_API_URL);
 
-   useEffect(() => {
+  useEffect(() => {
     const stopIdleLogout = startIdleLogout(async () => {
       handleUnauthorized();
 
@@ -50,8 +52,10 @@ function App() {
         <Route path="/host/properties/create" element={<CreatePropertyPage />} />
         <Route path="/host/properties/:id/edit" element={<EditPropertyPage />} />
         <Route path="/host/properties/:id/rooms" element={<ManageRoomsPage />} />
-        
+
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/payment-result" element={<PaymentResultPage />} />
+        <Route path="/trips" element={<MyTripsPage />} />
 
         {/* Bạn có thể thêm các route khác ở đây sau này */}
         {/* <Route path="/about" element={<About />} /> */}

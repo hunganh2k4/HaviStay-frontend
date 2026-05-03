@@ -27,6 +27,7 @@ export default function PropertyDetailPage() {
   const [rooms, setRooms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [isBooking, setIsBooking] = useState(false);
 
   // Date selection state (simulated)
   const [startDate, setStartDate] = useState(15);
@@ -73,6 +74,59 @@ export default function PropertyDetailPage() {
       setStartDate(day);
     } else if (day > startDate) {
       setEndDate(day);
+    }
+  };
+
+  const handleBooking = async () => {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      navigate("/login");
+      return;
+    }
+
+    if (!selectedRoom || !startDate || !endDate) return;
+
+    setIsBooking(true);
+    try {
+      // 1. Create Booking
+      const bookingRes = await fetch(`${API_URL}/bookings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          roomId: selectedRoom.id,
+          checkIn: `2026-05-${startDate.toString().padStart(2, '0')}`,
+          checkOut: `2026-05-${endDate.toString().padStart(2, '0')}`,
+          guestsCount: 1, // Default for now
+        }),
+      });
+
+      const bookingData = await bookingRes.json();
+      if (!bookingRes.ok) throw new Error(bookingData.message || "Lỗi tạo đơn đặt phòng");
+
+      // 2. Create VNPAY URL
+      const paymentRes = await fetch(`${API_URL}/payments/create-vnpay-url`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          bookingId: bookingData.id,
+        }),
+      });
+
+      const paymentData = await paymentRes.json();
+      if (!paymentRes.ok) throw new Error(paymentData.message || "Lỗi tạo link thanh toán");
+
+      // 3. Redirect to VNPAY
+      window.location.href = paymentData.url;
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setIsBooking(false);
     }
   };
 
@@ -340,8 +394,19 @@ export default function PropertyDetailPage() {
                   </div>
                 </div>
 
-                <button disabled={!selectedRoom || !endDate} className={`w-full py-3 rounded-xl text-base font-bold transition shadow-lg ${selectedRoom && endDate ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white" : "bg-gray-200 text-gray-400"}`}>
-                  {selectedRoom ? (endDate ? "Đặt phòng" : "Chọn ngày") : "Chọn phòng"}
+                <button 
+                  disabled={!selectedRoom || !endDate || isBooking} 
+                  onClick={handleBooking}
+                  className={`w-full py-3 rounded-xl text-base font-bold transition shadow-lg flex items-center justify-center gap-2 ${selectedRoom && endDate ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white hover:opacity-90" : "bg-gray-200 text-gray-400"}`}
+                >
+                  {isBooking ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Đang xử lý...</span>
+                    </>
+                  ) : (
+                    selectedRoom ? (endDate ? "Đặt phòng" : "Chọn ngày") : "Chọn phòng"
+                  )}
                 </button>
 
                 {selectedRoom && endDate && (

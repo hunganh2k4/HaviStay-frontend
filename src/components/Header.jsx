@@ -141,7 +141,10 @@ export default function Header() {
                   <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold">
                     Tin nhắn
                   </div>
-                  <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold">
+                  <div 
+                    onClick={() => navigate("/trips")}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold"
+                  >
                     Chuyến đi
                   </div>
                   {(JSON.parse(localStorage.getItem("user")).role === "HOST" || JSON.parse(localStorage.getItem("user")).role === "ADMIN") && (
