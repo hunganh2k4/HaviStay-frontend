@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Eye, X, ToggleLeft, ToggleRight, MapPin } from "lucide-react";
+import { Eye, X, CheckCircle, XCircle, MapPin } from "lucide-react";
 import { apiCall } from "../utils/api";
 
 export default function VerifyPropertiesPage() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("false"); // "false" = chưa publish
+  const [filter, setFilter] = useState("PENDING");
   const [selected, setSelected] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  const [showRejectReason, setShowRejectReason] = useState(false);
+  const [rejectNote, setRejectNote] = useState("");
 
   const fetchProperties = useCallback(async () => {
     setLoading(true);
     try {
-      const url = filter === "all" ? `/admin/properties` : `/admin/properties?published=${filter}`;
+      const url = filter === "all" ? `/admin/properties` : `/admin/properties?verificationStatus=${filter}`;
       const res = await apiCall(url);
       const data = await res.json();
       setProperties(Array.isArray(data) ? data : []);
@@ -22,18 +24,24 @@ export default function VerifyPropertiesPage() {
 
   useEffect(() => { fetchProperties(); }, [fetchProperties]);
 
-  const handleToggle = async (id, current) => {
+  const handleVerify = async (id, status, note = "") => {
     setActionLoading(id);
     try {
-      await apiCall(`/admin/properties/${id}/publish`, {
+      await apiCall(`/admin/properties/${id}/verify`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublished: !current }),
+        body: JSON.stringify({ status, reviewNote: note }),
       });
       setProperties((prev) =>
-        prev.map((p) => p.id === id ? { ...p, isPublished: !current } : p)
+        prev.map((p) => p.id === id ? { ...p, verificationStatus: status, isPublished: status === "APPROVED", reviewNote: note } : p)
       );
-      if (selected?.id === id) setSelected((s) => ({ ...s, isPublished: !current }));
+      if (selected?.id === id) {
+        setSelected((s) => ({ ...s, verificationStatus: status, isPublished: status === "APPROVED", reviewNote: note }));
+        if (status === "REJECTED") {
+          setShowRejectReason(false);
+          setRejectNote("");
+        }
+      }
     } catch (err) { alert(err.message); }
     finally { setActionLoading(null); }
   };
@@ -47,7 +55,7 @@ export default function VerifyPropertiesPage() {
 
       {/* Filter */}
       <div className="flex gap-2 mb-6">
-        {[{ v: "false", label: "⏳ Chờ duyệt" }, { v: "true", label: "✅ Đã publish" }, { v: "all", label: "📋 Tất cả" }].map(({ v, label }) => (
+        {[{ v: "PENDING", label: "⏳ Chờ duyệt" }, { v: "APPROVED", label: "✅ Đã duyệt" }, { v: "REJECTED", label: "❌ Bị từ chối" }, { v: "all", label: "📋 Tất cả" }].map(({ v, label }) => (
           <button key={v} onClick={() => setFilter(v)}
             className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${filter === v ? "bg-slate-900 text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}>
             {label}
@@ -71,8 +79,8 @@ export default function VerifyPropertiesPage() {
                   alt={p.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                 />
-                <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-bold ${p.isPublished ? "bg-green-500 text-white" : "bg-amber-400 text-white"}`}>
-                  {p.isPublished ? "✓ Published" : "⏳ Pending"}
+                <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-bold ${p.verificationStatus === 'APPROVED' ? "bg-green-500 text-white" : p.verificationStatus === 'REJECTED' ? "bg-red-500 text-white" : "bg-amber-400 text-white"}`}>
+                  {p.verificationStatus === 'APPROVED' ? "✓ Đã duyệt" : p.verificationStatus === 'REJECTED' ? "❌ Bị từ chối" : "⏳ Pending"}
                 </div>
               </div>
               <div className="p-4">
@@ -86,20 +94,8 @@ export default function VerifyPropertiesPage() {
                 </div>
                 <div className="flex gap-2 mt-3">
                   <button onClick={() => setSelected(p)}
-                    className="flex-1 flex items-center justify-center gap-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition">
-                    <Eye size={14} /> Chi tiết
-                  </button>
-                  <button
-                    onClick={() => handleToggle(p.id, p.isPublished)}
-                    disabled={actionLoading === p.id}
-                    className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-xl text-sm font-medium transition ${p.isPublished ? "bg-red-100 hover:bg-red-200 text-red-600" : "bg-green-100 hover:bg-green-200 text-green-700"} disabled:opacity-50`}>
-                    {actionLoading === p.id ? (
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    ) : p.isPublished ? (
-                      <><ToggleRight size={14} /> Ẩn</>
-                    ) : (
-                      <><ToggleLeft size={14} /> Duyệt</>
-                    )}
+                    className="w-full flex items-center justify-center gap-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition">
+                    <Eye size={14} /> Xem xét
                   </button>
                 </div>
               </div>
@@ -110,11 +106,11 @@ export default function VerifyPropertiesPage() {
 
       {/* Detail Modal */}
       {selected && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => { setSelected(null); setShowRejectReason(false); }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center p-5 border-b">
               <h3 className="font-bold text-lg">Chi tiết Property</h3>
-              <button onClick={() => setSelected(null)} className="p-1 hover:bg-gray-100 rounded-full"><X size={20} /></button>
+              <button onClick={() => { setSelected(null); setShowRejectReason(false); }} className="p-1 hover:bg-gray-100 rounded-full"><X size={20} /></button>
             </div>
             <div className="p-5 space-y-4">
               {selected.images?.[0] && (
@@ -137,17 +133,58 @@ export default function VerifyPropertiesPage() {
                 </div>
                 <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[10px] font-bold text-gray-400 uppercase">Trạng thái</p>
-                  <p className={`font-bold mt-0.5 ${selected.isPublished ? "text-green-600" : "text-amber-600"}`}>
-                    {selected.isPublished ? "Đã publish" : "Chờ duyệt"}
+                  <p className={`font-bold mt-0.5 ${selected.verificationStatus === 'APPROVED' ? "text-green-600" : selected.verificationStatus === 'REJECTED' ? "text-red-600" : "text-amber-600"}`}>
+                    {selected.verificationStatus === 'APPROVED' ? "Đã duyệt" : selected.verificationStatus === 'REJECTED' ? "Bị từ chối" : "Chờ duyệt"}
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => handleToggle(selected.id, selected.isPublished)}
-                disabled={actionLoading === selected.id}
-                className={`w-full py-3 rounded-xl font-bold text-sm transition ${selected.isPublished ? "bg-red-100 hover:bg-red-200 text-red-600" : "bg-green-600 hover:bg-green-700 text-white"} disabled:opacity-50`}>
-                {actionLoading === selected.id ? "Đang xử lý..." : selected.isPublished ? "Ẩn property này" : "✓ Duyệt & Publish"}
-              </button>
+
+              {selected.reviewNote && selected.verificationStatus === 'REJECTED' && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm">
+                  <p className="font-bold mb-1">Lý do từ chối:</p>
+                  <p>{selected.reviewNote}</p>
+                </div>
+              )}
+
+              {selected.verificationStatus === 'PENDING' && (
+                showRejectReason ? (
+                  <div className="space-y-3 bg-gray-50 p-4 rounded-xl border">
+                    <p className="text-sm font-bold text-gray-700">Lý do từ chối (bắt buộc)</p>
+                    <textarea
+                      value={rejectNote}
+                      onChange={(e) => setRejectNote(e.target.value)}
+                      placeholder="Property này không đạt yêu cầu vì..."
+                      className="w-full p-3 border rounded-xl text-sm outline-none focus:border-red-500 resize-none h-24"
+                    />
+                    <div className="flex gap-2">
+                      <button onClick={() => setShowRejectReason(false)} className="flex-1 py-2 bg-gray-200 text-gray-700 rounded-xl font-bold text-sm">Hủy</button>
+                      <button 
+                        onClick={() => handleVerify(selected.id, "REJECTED", rejectNote)}
+                        disabled={actionLoading === selected.id || !rejectNote.trim()}
+                        className="flex-1 py-2 bg-red-600 text-white rounded-xl font-bold text-sm disabled:opacity-50"
+                      >
+                        {actionLoading === selected.id ? "Đang xử lý..." : "Xác nhận từ chối"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => setShowRejectReason(true)}
+                      className="flex-1 py-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2"
+                    >
+                      <XCircle size={18} /> Từ chối
+                    </button>
+                    <button
+                      onClick={() => handleVerify(selected.id, "APPROVED")}
+                      disabled={actionLoading === selected.id}
+                      className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {actionLoading === selected.id ? "Đang xử lý..." : <><CheckCircle size={18} /> Duyệt & Publish</>}
+                    </button>
+                  </div>
+                )
+              )}
             </div>
           </div>
         </div>

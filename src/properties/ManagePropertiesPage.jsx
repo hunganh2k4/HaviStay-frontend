@@ -77,6 +77,24 @@ export default function ManagePropertiesPage() {
     }
   };
 
+  const handleRequestVerification = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/properties/${id}/request-verification`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Không thể gửi yêu cầu duyệt.");
+      }
+
+      setProperties(properties.map(p => p.id === id ? { ...p, verificationStatus: 'PENDING', reviewNote: null } : p));
+      alert("Đã gửi yêu cầu kiểm duyệt thành công!");
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   return (
     <div className="bg-white min-h-screen text-gray-900 antialiased">
       <Header />
@@ -169,14 +187,47 @@ export default function ManagePropertiesPage() {
                 </div>
 
                 {/* Status Section */}
-                <div className="col-span-2 flex justify-center">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${property.isPublished
-                    ? "bg-green-50 text-green-600"
-                    : "bg-gray-50 text-gray-400"
-                    }`}>
-                    {property.isPublished ? <Eye size={12} /> : <EyeOff size={12} />}
-                    {property.isPublished ? "Đang hiển thị" : "Đã ẩn"}
-                  </span>
+                <div className="col-span-2 flex flex-col justify-center items-center gap-2">
+                  {!property.verificationStatus && (
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600">
+                      📝 Bản Nháp
+                    </span>
+                  )}
+                  {property.verificationStatus === 'PENDING' && (
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-600">
+                      ⏳ Chờ duyệt
+                    </span>
+                  )}
+                  {property.verificationStatus === 'REJECTED' && (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-600">
+                        ❌ Bị từ chối
+                      </span>
+                      {property.reviewNote && (
+                        <span className="text-[9px] text-red-500 text-center max-w-[120px] truncate" title={property.reviewNote}>
+                          {property.reviewNote}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {property.verificationStatus === 'APPROVED' && (
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${property.isPublished
+                      ? "bg-green-50 text-green-600"
+                      : "bg-gray-50 text-gray-400"
+                      }`}>
+                      {property.isPublished ? <Eye size={12} /> : <EyeOff size={12} />}
+                      {property.isPublished ? "Hiển thị" : "Đã ẩn"}
+                    </span>
+                  )}
+
+                  {(!property.verificationStatus || property.verificationStatus === 'REJECTED') && (
+                    <button
+                      onClick={() => handleRequestVerification(property.id)}
+                      className="text-[10px] font-bold text-rose-500 hover:text-rose-600 hover:underline"
+                    >
+                      Gửi duyệt
+                    </button>
+                  )}
                 </div>
 
                 {/* Performance Section */}
