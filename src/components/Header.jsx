@@ -155,7 +155,10 @@ export default function Header() {
                       Quản lý chỗ nghỉ
                     </div>
                   )}
-                  <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold border-b border-gray-100 mb-1">
+                  <div 
+                    onClick={() => navigate("/wishlist")}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold border-b border-gray-100 mb-1"
+                  >
                     Danh sách yêu thích
                   </div>
                   <div 

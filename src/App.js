@@ -12,6 +12,7 @@ import ManageRoomsPage from "./properties/ManageRoomsPage";
 import AdminDashboard from "./admin/AdminDashboard";
 import PaymentResultPage from "./payments/PaymentResultPage";
 import MyTripsPage from "./trips/MyTripsPage";
+import WishlistPage from "./wishlist/WishlistPage";
 import { useEffect } from "react";
 
 import { startIdleLogout } from "./utils/idleLogout";
@@ -56,6 +57,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/payment-result" element={<PaymentResultPage />} />
         <Route path="/trips" element={<MyTripsPage />} />
+        <Route path="/wishlist" element={<WishlistPage />} />
 
         {/* Bạn có thể thêm các route khác ở đây sau này */}
         {/* <Route path="/about" element={<About />} /> */}

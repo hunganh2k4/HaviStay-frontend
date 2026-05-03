@@ -28,6 +28,7 @@ export default function PropertyDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isBooking, setIsBooking] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   // Date selection state (simulated)
   const [startDate, setStartDate] = useState(15);
@@ -49,6 +50,18 @@ export default function PropertyDetailPage() {
             setSelectedRoom(roomsData[0]);
           }
         }
+
+        // Check wishlist status
+        const userData = localStorage.getItem("user");
+        if (userData) {
+          const wishRes = await fetch(`${API_URL}/wishlists/status/${id}`, {
+            credentials: "include",
+          });
+          if (wishRes.ok) {
+            const wishData = await wishRes.json();
+            setIsWishlisted(wishData.isWishlisted);
+          }
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -58,6 +71,27 @@ export default function PropertyDetailPage() {
 
     fetchPropertyData();
   }, [id]);
+
+  const toggleWishlist = async () => {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/wishlists/toggle/${id}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setIsWishlisted(data.isWishlisted);
+      }
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
+    }
+  };
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -170,8 +204,11 @@ export default function PropertyDetailPage() {
             <button className="flex items-center gap-2 underline hover:bg-gray-50 px-2 py-1 rounded-md transition">
               <Share size={16} /> Chia sẻ
             </button>
-            <button className="flex items-center gap-2 underline hover:bg-gray-50 px-2 py-1 rounded-md transition">
-              <Heart size={16} /> Lưu
+            <button 
+              onClick={toggleWishlist}
+              className={`flex items-center gap-2 underline hover:bg-gray-50 px-2 py-1 rounded-md transition ${isWishlisted ? "text-rose-500" : ""}`}
+            >
+              <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} /> {isWishlisted ? "Đã lưu" : "Lưu"}
             </button>
           </div>
         </div>
