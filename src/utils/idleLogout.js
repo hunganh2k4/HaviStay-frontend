@@ -1,4 +1,4 @@
-const IDLE_TIMEOUT = 30 * 1000;
+const IDLE_TIMEOUT = 10 * 60 * 1000; // 10 phút
 
 let idleTimer;
 

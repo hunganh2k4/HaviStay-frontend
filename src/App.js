@@ -7,6 +7,7 @@ import RegisterPage from "./auth/RegisterPage";
 import BecomeHostPage from "./auth/BecomeHostPage";
 import ManagePropertiesPage from "./properties/ManagePropertiesPage";
 import CreatePropertyPage from "./properties/CreatePropertyPage";
+import AdminDashboard from "./admin/AdminDashboard";
 import { useEffect } from "react";
 
 import { startIdleLogout } from "./utils/idleLogout";
@@ -45,6 +46,8 @@ function App() {
         <Route path="/become-a-host" element={<BecomeHostPage />} />
         <Route path="/host/properties" element={<ManagePropertiesPage />} />
         <Route path="/host/properties/create" element={<CreatePropertyPage />} />
+        
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
         {/* Bạn có thể thêm các route khác ở đây sau này */}
         {/* <Route path="/about" element={<About />} /> */}

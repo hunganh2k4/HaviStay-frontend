@@ -22,11 +22,16 @@ export async function apiCall(
   options = {}
 ) {
   const url = `${API_URL}${endpoint}`;
+
+  const isFormData = options.body instanceof FormData;
+
   const defaultOptions = {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // Always include cookies
+    headers: isFormData
+      ? {}
+      : {
+          "Content-Type": "application/json",
+        },
+    credentials: "include",
   };
 
   const finalOptions = {
@@ -68,14 +73,25 @@ export async function apiCall(
         // Browser automatically sends refresh_token cookie
         const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include", // Sends refresh_token cookie automatically
         });
 
+        // Refresh token hết hạn / invalid
+        if (refreshResponse.status === 401) {
+          isRefreshing = false;
+          refreshSubscribers = [];
+
+          await handleUnauthorized();
+
+          throw new Error("Refresh token expired");
+        }
+
+        // Server lỗi khác
         if (!refreshResponse.ok) {
-          throw new Error("Token refresh failed");
+          throw new Error("Refresh failed");
         }
 
         isRefreshing = false;

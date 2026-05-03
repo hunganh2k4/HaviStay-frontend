@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Check, Upload, Phone, CreditCard, Image as ImageIcon, Building2, User, FileText, Camera } from "lucide-react";
-import API_URL from "../config/config";
+import { apiCall } from "../utils/api";
 
 export default function BecomeHostPage() {
   const navigate = useNavigate();
@@ -66,67 +66,92 @@ export default function BecomeHostPage() {
   };
 
   const handleBecomeHost = async () => {
-    if (!isAgreed) {
-      setError("Bạn cần đồng ý với các quy định để tiếp tục.");
-      return;
-    }
-
-    if (verificationType === "PERSONAL") {
-      if (!fullName || !cccdNumber || !cccdFrontImage || !cccdBackImage || !selfieImage) {
-        setError("Vui lòng điền đầy đủ thông tin cá nhân và tải lên đủ ảnh.");
+      if (!isAgreed) {
+        setError("Bạn cần đồng ý với các quy định để tiếp tục.");
         return;
       }
-    } else {
-      if (!companyName || !taxCode || !legalRepresentative || !representativeCCCD || !businessLicense) {
-        setError("Vui lòng điền đầy đủ thông tin doanh nghiệp và giấy phép.");
-        return;
-      }
-    }
 
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const token = localStorage.getItem("access_token");
-      const formData = new FormData();
-      formData.append("verificationType", verificationType);
-      if (phone) formData.append("phone", phone);
-
+      // Validate PERSONAL
       if (verificationType === "PERSONAL") {
-        formData.append("fullName", fullName);
-        formData.append("cccdNumber", cccdNumber);
-        formData.append("cccdFrontImage", cccdFrontImage);
-        formData.append("cccdBackImage", cccdBackImage);
-        formData.append("selfieImage", selfieImage);
-      } else {
-        formData.append("companyName", companyName);
-        formData.append("taxCode", taxCode);
-        formData.append("legalRepresentative", legalRepresentative);
-        formData.append("representativeCCCD", representativeCCCD);
-        formData.append("businessLicense", businessLicense);
+        if (
+          !fullName ||
+          !cccdNumber ||
+          !cccdFrontImage ||
+          !cccdBackImage ||
+          !selfieImage
+        ) {
+          setError("Vui lòng điền đầy đủ thông tin cá nhân và tải lên đủ ảnh.");
+          return;
+        }
       }
 
-      const response = await fetch(`${API_URL}/users/become-host`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Không thể thực hiện yêu cầu");
+      // Validate BUSINESS
+      if (verificationType === "BUSINESS") {
+        if (
+          !companyName ||
+          !taxCode ||
+          !legalRepresentative ||
+          !representativeCCCD ||
+          !businessLicense
+        ) {
+          setError("Vui lòng điền đầy đủ thông tin doanh nghiệp và giấy phép.");
+          return;
+        }
       }
 
-      setSuccess(true);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const formData = new FormData();
+
+        // Common
+        formData.append("verificationType", verificationType);
+
+        if (phone) {
+          formData.append("phone", phone);
+        }
+
+        // PERSONAL
+        if (verificationType === "PERSONAL") {
+          formData.append("fullName", fullName);
+          formData.append("cccdNumber", cccdNumber);
+          formData.append("cccdFrontImage", cccdFrontImage);
+          formData.append("cccdBackImage", cccdBackImage);
+          formData.append("selfieImage", selfieImage);
+        }
+
+        // BUSINESS
+        if (verificationType === "BUSINESS") {
+          formData.append("companyName", companyName);
+          formData.append("taxCode", taxCode);
+          formData.append("legalRepresentative", legalRepresentative);
+          formData.append("representativeCCCD", representativeCCCD);
+          formData.append("businessLicense", businessLicense);
+        }
+
+        // Dùng apiCall trực tiếp vì FormData không được JSON.stringify
+        const response = await apiCall("/users/become-host", {
+          method: "PATCH",
+          body: formData,
+
+          // Quan trọng: bỏ Content-Type mặc định
+          headers: {},
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Không thể thực hiện yêu cầu");
+        }
+
+        setSuccess(true);
+      } catch (err) {
+        setError(err.message || "Không thể gửi yêu cầu");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const destinations = [
     { name: "TORONTO", img: "https://images.unsplash.com/photo-1517090504586-fde19ea6066f?q=80&w=400&h=600&auto=format&fit=crop" },

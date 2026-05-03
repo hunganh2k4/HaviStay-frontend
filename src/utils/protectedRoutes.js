@@ -4,5 +4,7 @@ export const protectedRoutes = [
   "/wishlist",
   "/host",
   "/checkout",
-  "/host"
+  "/host",
+  "/admin",
+  "/become-a-host",
 ];
