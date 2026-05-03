@@ -23,9 +23,8 @@ export default function ManagePropertiesPage() {
   useEffect(() => {
     const fetchMyProperties = async () => {
       const userData = localStorage.getItem("user");
-      const token = localStorage.getItem("access_token");
 
-      if (!userData || !token) {
+      if (!userData) {
         navigate("/login");
         return;
       }
@@ -38,9 +37,7 @@ export default function ManagePropertiesPage() {
 
       try {
         const response = await fetch(`${API_URL}/properties/my-properties`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: "include",
         });
 
         if (!response.ok) {
@@ -65,12 +62,9 @@ export default function ManagePropertiesPage() {
     }
 
     try {
-      const token = localStorage.getItem("access_token");
       const response = await fetch(`${API_URL}/properties/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include",
       });
 
       if (!response.ok) {

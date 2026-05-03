@@ -78,7 +78,6 @@ export default function CreatePropertyPage() {
     setError("");
 
     try {
-      const token = localStorage.getItem("access_token");
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
@@ -92,9 +91,7 @@ export default function CreatePropertyPage() {
 
       const response = await fetch(`${API_URL}/properties`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include",
         body: formData,
       });
 
