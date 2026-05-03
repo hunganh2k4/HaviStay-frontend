@@ -19,11 +19,12 @@ export default function MyTripsPage() {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [setError] = useState("");
   const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
 
   useEffect(() => {
     fetchMyTrips();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const fetchMyTrips = async () => {
@@ -204,8 +205,8 @@ export default function MyTripsPage() {
                           setSelectedBookingForReview(booking);
                         }}
                         className={`flex-1 py-2.5 border text-xs font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${booking.isReviewed
-                            ? "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                            : "bg-white border-rose-500 text-rose-500 hover:bg-rose-50"
+                          ? "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                          : "bg-white border-rose-500 text-rose-500 hover:bg-rose-50"
                           }`}
                       >
                         <Star size={14} fill={booking.isReviewed ? "currentColor" : "none"} />

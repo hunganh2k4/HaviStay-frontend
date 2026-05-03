@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Star, MapPin, ChevronRight, Inbox } from "lucide-react";
+import { Heart, Star, MapPin, ChevronRight } from "lucide-react";
 import Header from "../components/Header";
 import API_URL from "../config/config";
 
@@ -11,7 +11,8 @@ export default function WishlistPage() {
 
   useEffect(() => {
     fetchWishlist();
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchWishlist = async () => {
     const userData = localStorage.getItem("user");
@@ -26,7 +27,7 @@ export default function WishlistPage() {
       });
 
       if (!response.ok) throw new Error("Không thể tải danh sách yêu thích.");
-      
+
       const data = await response.json();
       setWishlist(data);
     } catch (err) {
@@ -84,18 +85,18 @@ export default function WishlistPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {wishlist.map(property => (
-              <div 
-                key={property.id} 
+              <div
+                key={property.id}
                 className="bg-white rounded-[24px] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer"
                 onClick={() => navigate(`/properties/${property.id}`)}
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <img 
-                    src={property.images?.[0] || "https://images.unsplash.com/photo-1512917774080-9991f1c4c750"} 
-                    alt={property.title} 
+                  <img
+                    src={property.images?.[0] || "https://images.unsplash.com/photo-1512917774080-9991f1c4c750"}
+                    alt={property.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
-                  <button 
+                  <button
                     onClick={(e) => removeFromWishlist(e, property.id)}
                     className="absolute top-4 right-4 p-2 bg-rose-500 text-white rounded-full shadow-lg hover:scale-110 transition-all"
                   >
@@ -111,7 +112,7 @@ export default function WishlistPage() {
                       <span>{property.reviews?.length > 0 ? (property.reviews.reduce((acc, r) => acc + r.rating, 0) / property.reviews.length).toFixed(1) : "---"}</span>
                     </div>
                   </div>
-                  
+
                   <p className="text-xs text-gray-500 font-medium flex items-center gap-1 mb-4">
                     <MapPin size={12} className="text-rose-500" />
                     {property.location}
@@ -121,8 +122,8 @@ export default function WishlistPage() {
                     <div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Giá từ</p>
                       <p className="font-bold text-rose-500">
-                        {property.rooms?.[0]?.pricePerNight ? 
-                          new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(property.rooms[0].pricePerNight) 
+                        {property.rooms?.[0]?.pricePerNight ?
+                          new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(property.rooms[0].pricePerNight)
                           : "---"}
                         <span className="text-[10px] text-gray-400 font-normal ml-1">/ đêm</span>
                       </p>

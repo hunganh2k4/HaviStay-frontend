@@ -25,7 +25,7 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState("");
   const [socket, setSocket] = useState(null);
   const [isInitialLoading, setIsInitialLoading] = useState(!!hostId);
-  const [currentUser, setCurrentUser] = useState(() => {
+  const [currentUser] = useState(() => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   });
@@ -38,11 +38,11 @@ export default function ChatPage() {
     }
 
     const fetchInitialData = async () => {
-      const existingConvs = await fetchConversations();
+      await fetchConversations();
 
       if (hostId) {
         try {
-          const url = propertyId 
+          const url = propertyId
             ? `${API_URL}/chat/find-or-create/${hostId}?propertyId=${propertyId}`
             : `${API_URL}/chat/find-or-create/${hostId}`;
 
@@ -70,7 +70,7 @@ export default function ChatPage() {
     };
 
     fetchInitialData();
-  }, [hostId, currentUser]);
+  }, [hostId, currentUser, propertyId, navigate]);
 
   const selectedConvRef = useRef(null);
 
@@ -95,7 +95,7 @@ export default function ChatPage() {
 
       return () => newSocket.close();
     }
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     if (selectedConversation) {
@@ -237,24 +237,24 @@ export default function ChatPage() {
                       )}
                       <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
                     </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-1">
-                      <h3 className={`font-bold text-sm truncate ${isSelected ? "text-rose-600" : "text-gray-900"}`}>
-                        {partner?.name}
-                      </h3>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">
-                        {lastMsg ? new Date(lastMsg.createdAt).toLocaleDateString("vi-VN") : ""}
-                      </span>
-                    </div>
-                    {conv.property && (
-                      <p className="text-[10px] font-bold text-rose-500 uppercase truncate mb-1">
-                        {conv.property.title}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <h3 className={`font-bold text-sm truncate ${isSelected ? "text-rose-600" : "text-gray-900"}`}>
+                          {partner?.name}
+                        </h3>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase">
+                          {lastMsg ? new Date(lastMsg.createdAt).toLocaleDateString("vi-VN") : ""}
+                        </span>
+                      </div>
+                      {conv.property && (
+                        <p className="text-[10px] font-bold text-rose-500 uppercase truncate mb-1">
+                          {conv.property.title}
+                        </p>
+                      )}
+                      <p className={`text-xs truncate ${lastMsg?.isRead === false && lastMsg.senderId !== currentUser?.id ? "font-bold text-gray-900" : "text-gray-500"}`}>
+                        {lastMsg ? lastMsg.content : "Bắt đầu cuộc trò chuyện..."}
                       </p>
-                    )}
-                    <p className={`text-xs truncate ${lastMsg?.isRead === false && lastMsg.senderId !== currentUser?.id ? "font-bold text-gray-900" : "text-gray-500"}`}>
-                      {lastMsg ? lastMsg.content : "Bắt đầu cuộc trò chuyện..."}
-                    </p>
-                  </div>
+                    </div>
                   </div>
                 );
               })

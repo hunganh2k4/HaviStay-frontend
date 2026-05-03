@@ -11,8 +11,6 @@ import {
   Settings,
   Upload,
   X,
-  Info,
-  Check
 } from "lucide-react";
 import API_URL from "../config/config";
 import Header from "../components/Header";

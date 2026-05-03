@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../index.css";
-import { Heart, ChevronRight, Star, ChevronLeft } from "lucide-react";
+import { Heart, ChevronRight } from "lucide-react";
 import Header from "../components/Header";
 import API_URL from "../config/config";
 import { useNavigate } from "react-router-dom";
@@ -141,8 +141,8 @@ export default function HomePage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
         {items.slice(0, 7).map((item, index) => (
-          <div 
-            key={item.id || index} 
+          <div
+            key={item.id || index}
             className="w-full min-w-0 cursor-pointer group"
             onClick={() => isRealData && item.id && navigate(`/properties/${item.id}`)}
           >
@@ -155,13 +155,12 @@ export default function HomePage() {
               <span className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-[10px] font-bold shadow">
                 {isRealData ? "Xác thực" : item.badge}
               </span>
-              <button 
+              <button
                 onClick={(e) => isRealData ? toggleWishlist(e, item.id) : null}
-                className={`absolute top-2 right-2 p-1.5 rounded-full shadow hover:scale-110 transition-all ${
-                  isRealData && wishlistIds.has(item.id) 
-                    ? "bg-rose-500 text-white" 
+                className={`absolute top-2 right-2 p-1.5 rounded-full shadow hover:scale-110 transition-all ${isRealData && wishlistIds.has(item.id)
+                    ? "bg-rose-500 text-white"
                     : "bg-white/90 text-gray-400 hover:text-rose-500"
-                }`}
+                  }`}
               >
                 <Heart size={14} fill={isRealData && wishlistIds.has(item.id) ? "currentColor" : "none"} />
               </button>
@@ -169,8 +168,8 @@ export default function HomePage() {
             <div className="mt-2">
               <h3 className="font-semibold text-xs line-clamp-2">{item.title}</h3>
               <p className="text-gray-500 text-[11px] line-clamp-2">
-                {isRealData 
-                  ? `₫${item.rooms?.[0]?.pricePerNight?.toLocaleString() || "---"} / đêm` 
+                {isRealData
+                  ? `₫${item.rooms?.[0]?.pricePerNight?.toLocaleString() || "---"} / đêm`
                   : item.price}
               </p>
             </div>
@@ -186,10 +185,10 @@ export default function HomePage() {
 
       {/* Real Properties Section */}
       {!isLoading && properties.length > 0 && (
-        <Section 
-          title="Nơi lưu trú nổi bật" 
-          items={properties} 
-          isRealData={true} 
+        <Section
+          title="Nơi lưu trú nổi bật"
+          items={properties}
+          isRealData={true}
         />
       )}
 

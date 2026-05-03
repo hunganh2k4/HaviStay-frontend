@@ -8,8 +8,6 @@ import {
   UtensilsCrossed,
   Briefcase,
   Gem,
-  Flag,
-  Eye,
   ChevronLeft,
   ChevronRight,
   Users,
@@ -271,7 +269,7 @@ export default function PropertyDetailPage() {
                   Superhost · 11 tháng kinh nghiệm đón tiếp khách
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   if (property?.host?.id) {
                     // Start a conversation with host about this specific property
