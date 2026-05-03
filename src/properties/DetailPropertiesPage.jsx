@@ -14,7 +14,8 @@ import {
   ChevronRight,
   Users,
   Bed,
-  Bath
+  Bath,
+  MessageSquare,
 } from "lucide-react";
 import Header from "../components/Header";
 import { useParams, useNavigate } from "react-router-dom";
@@ -262,7 +263,7 @@ export default function PropertyDetailPage() {
                   (property?.host?.name?.charAt(0) || "W")
                 )}
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="text-sm font-bold">
                   Chủ nhà: {property?.host?.name || "WECO STAY Cheongnyangni"}
                 </h3>
@@ -270,6 +271,19 @@ export default function PropertyDetailPage() {
                   Superhost · 11 tháng kinh nghiệm đón tiếp khách
                 </p>
               </div>
+              <button 
+                onClick={() => {
+                  if (property?.host?.id) {
+                    // Start a conversation with host
+                    navigate(`/messages?hostId=${property.host.id}`);
+                  } else {
+                    navigate("/login");
+                  }
+                }}
+                className="px-6 py-2.5 border border-gray-900 rounded-lg text-sm font-bold hover:bg-gray-50 transition active:scale-95 flex items-center gap-2"
+              >
+                <MessageSquare size={16} /> Liên hệ chủ nhà
+              </button>
             </div>
 
             {/* FEATURES */}

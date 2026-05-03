@@ -13,6 +13,8 @@ import AdminDashboard from "./admin/AdminDashboard";
 import PaymentResultPage from "./payments/PaymentResultPage";
 import MyTripsPage from "./trips/MyTripsPage";
 import WishlistPage from "./wishlist/WishlistPage";
+import ChatPage from "./chat/ChatPage";
+import ChatFloatingButton from "./components/ChatFloatingButton";
 import { useEffect } from "react";
 
 import { startIdleLogout } from "./utils/idleLogout";
@@ -42,26 +44,31 @@ function App() {
 
   return (
     <Router>
-      <Routes>
-        {/* Định nghĩa đường dẫn mặc định là trang Home */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/properties/:id" element={<PropertyDetailPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/become-a-host" element={<BecomeHostPage />} />
-        <Route path="/host/properties" element={<ManagePropertiesPage />} />
-        <Route path="/host/properties/create" element={<CreatePropertyPage />} />
-        <Route path="/host/properties/:id/edit" element={<EditPropertyPage />} />
-        <Route path="/host/properties/:id/rooms" element={<ManageRoomsPage />} />
+      <div className="App">
+        <ChatFloatingButton />
+        <Routes>
+          {/* Định nghĩa đường dẫn mặc định là trang Home */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/properties/:id" element={<PropertyDetailPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/become-a-host" element={<BecomeHostPage />} />
+          
+          <Route path="/host/properties" element={<ManagePropertiesPage />} />
+          <Route path="/host/properties/create" element={<CreatePropertyPage />} />
+          <Route path="/host/properties/:id/edit" element={<EditPropertyPage />} />
+          <Route path="/host/properties/:id/rooms" element={<ManageRoomsPage />} />
 
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/payment-result" element={<PaymentResultPage />} />
-        <Route path="/trips" element={<MyTripsPage />} />
-        <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/payment-result" element={<PaymentResultPage />} />
+          <Route path="/trips" element={<MyTripsPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/messages" element={<ChatPage />} />
 
-        {/* Bạn có thể thêm các route khác ở đây sau này */}
-        {/* <Route path="/about" element={<About />} /> */}
-      </Routes>
+          {/* Bạn có thể thêm các route khác ở đây sau này */}
+          {/* <Route path="/about" element={<About />} /> */}
+        </Routes>
+      </div>
     </Router>
   );
 }

@@ -156,6 +156,12 @@ export default function Header() {
                     </div>
                   )}
                   <div 
+                    onClick={() => navigate("/messages")}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold border-b border-gray-100 mb-1"
+                  >
+                    Tin nhắn
+                  </div>
+                  <div 
                     onClick={() => navigate("/wishlist")}
                     className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold border-b border-gray-100 mb-1"
                   >
