@@ -14,6 +14,7 @@ import PaymentResultPage from "./payments/PaymentResultPage";
 import MyTripsPage from "./trips/MyTripsPage";
 import WishlistPage from "./wishlist/WishlistPage";
 import ChatPage from "./chat/ChatPage";
+import PropertiesByLocationPage from "./properties/PropertiesByLocationPage";
 import ChatFloatingButton from "./components/ChatFloatingButton";
 import { useEffect } from "react";
 
@@ -64,6 +65,7 @@ function App() {
           <Route path="/trips" element={<MyTripsPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/messages" element={<ChatPage />} />
+          <Route path="/search/:location" element={<PropertiesByLocationPage />} />
 
           {/* Bạn có thể thêm các route khác ở đây sau này */}
           {/* <Route path="/about" element={<About />} /> */}

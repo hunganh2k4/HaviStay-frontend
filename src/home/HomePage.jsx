@@ -100,13 +100,12 @@ export default function HomePage() {
           <h2 className="text-xl md:text-2xl font-bold whitespace-nowrap">{title}</h2>
           {hasMore && (
             <button
-              onClick={() => toggleExpand(locationKey)}
+              onClick={() => navigate(`/search/${locationKey}`)}
               className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
-              title={isExpanded ? "Thu gọn" : "Xem thêm"}
+              title="Xem tất cả"
             >
               <ChevronRight
                 size={20}
-                className={`transition-transform ${isExpanded ? "rotate-90" : ""}`}
               />
             </button>
           )}
