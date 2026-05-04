@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Share,
   Heart,
@@ -14,6 +14,9 @@ import {
   Bed,
   Bath,
   MessageSquare,
+  Link,
+  Check,
+  X,
 } from "lucide-react";
 import Header from "../components/Header";
 import { useParams, useNavigate } from "react-router-dom";
@@ -29,6 +32,20 @@ export default function PropertyDetailPage() {
   const [isBooking, setIsBooking] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shareRef = useRef(null);
+
+  // Close share dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (shareRef.current && !shareRef.current.contains(e.target)) {
+        setIsShareOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Date selection state (simulated)
   const [startDate, setStartDate] = useState(15);
@@ -208,9 +225,93 @@ export default function PropertyDetailPage() {
           </div>
 
           <div className="flex items-center gap-4 text-sm font-semibold">
-            <button className="flex items-center gap-2 underline hover:bg-gray-50 px-2 py-1 rounded-md transition">
-              <Share size={16} /> Chia sẻ
-            </button>
+            <div className="relative" ref={shareRef}>
+              <button
+                onClick={() => setIsShareOpen(!isShareOpen)}
+                className="flex items-center gap-2 underline hover:bg-gray-50 px-2 py-1 rounded-md transition"
+              >
+                <Share size={16} /> Chia sẻ
+              </button>
+
+              {isShareOpen && (
+                <div className="absolute right-0 top-10 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-bold text-sm">Chia sẻ chỗ ở này</h4>
+                    <button onClick={() => setIsShareOpen(false)} className="p-1 hover:bg-gray-100 rounded-full transition">
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  {/* Copy Link */}
+                  <button
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(window.location.href);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      } catch {
+                        // Fallback for older browsers
+                        const el = document.createElement("input");
+                        el.value = window.location.href;
+                        document.body.appendChild(el);
+                        el.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(el);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${copied ? "bg-green-50 text-green-600" : "hover:bg-gray-50"
+                      }`}
+                  >
+                    {copied ? <Check size={16} /> : <Link size={16} />}
+                    {copied ? "Đã sao chép liên kết!" : "Sao chép liên kết"}
+                  </button>
+
+                  {/* Facebook */}
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-gray-50 transition"
+                    onClick={() => setIsShareOpen(false)}
+                  >
+                    <span className="w-6 h-6 bg-[#1877F2] rounded-full flex items-center justify-center text-white text-[10px] font-bold">f</span>
+                    Facebook
+                  </a>
+
+                  {/* Twitter / X */}
+                  <a
+                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(property?.title || "Chỗ ở đẹp tại HaviStay")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-gray-50 transition"
+                    onClick={() => setIsShareOpen(false)}
+                  >
+                    <span className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-[10px] font-bold">X</span>
+                    Twitter / X
+                  </a>
+
+                  {/* Native Share (mobile) */}
+                  {typeof navigator.share === "function" && (
+                    <button
+                      onClick={() => {
+                        navigator.share({
+                          title: property?.title || "HaviStay",
+                          text: property?.description || "",
+                          url: window.location.href,
+                        });
+                        setIsShareOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-gray-50 transition"
+                    >
+                      <Share size={16} />
+                      Chia sẻ khác...
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             <button
               onClick={toggleWishlist}
               className={`flex items-center gap-2 underline hover:bg-gray-50 px-2 py-1 rounded-md transition ${isWishlisted ? "text-rose-500" : ""}`}
