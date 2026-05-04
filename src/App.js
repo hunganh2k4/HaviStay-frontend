@@ -15,6 +15,7 @@ import MyTripsPage from "./trips/MyTripsPage";
 import WishlistPage from "./wishlist/WishlistPage";
 import ChatPage from "./chat/ChatPage";
 import PropertiesByLocationPage from "./properties/PropertiesByLocationPage";
+import EarningsPage from "./properties/EarningsPage";
 import ChatFloatingButton from "./components/ChatFloatingButton";
 import { useEffect } from "react";
 
@@ -59,6 +60,7 @@ function App() {
           <Route path="/host/properties/create" element={<CreatePropertyPage />} />
           <Route path="/host/properties/:id/edit" element={<EditPropertyPage />} />
           <Route path="/host/properties/:id/rooms" element={<ManageRoomsPage />} />
+          <Route path="/host/earnings" element={<EarningsPage />} />
 
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/payment-result" element={<PaymentResultPage />} />

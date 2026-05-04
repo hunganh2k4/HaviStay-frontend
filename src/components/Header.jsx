@@ -223,7 +223,10 @@ export default function Header() {
                   </div>
                   <div onClick={() => navigate("/trips")} className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold">Chuyến đi</div>
                   {(JSON.parse(localStorage.getItem("user")).role === "HOST" || JSON.parse(localStorage.getItem("user")).role === "ADMIN") && (
-                    <div onClick={() => navigate("/host/properties")} className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-bold text-rose-500">Quản lý chỗ nghỉ</div>
+                    <>
+                      <div onClick={() => navigate("/host/properties")} className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm font-bold text-rose-500">Quản lý chỗ nghỉ</div>
+                      <div onClick={() => navigate("/host/earnings")} className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm font-semibold text-gray-700">Thống kê thu nhập</div>
+                    </>
                   )}
                   <div onClick={() => navigate("/messages")} className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm font-semibold border-b border-gray-100 mb-1 flex items-center justify-between">
                     <span>Tin nhắn</span>

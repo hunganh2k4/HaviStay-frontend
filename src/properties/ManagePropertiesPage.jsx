@@ -11,6 +11,7 @@ import {
   Eye,
   EyeOff,
   MessageSquare,
+  TrendingUp,
 } from "lucide-react";
 import API_URL from "../config/config";
 import Header from "../components/Header";
@@ -109,6 +110,13 @@ export default function ManagePropertiesPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/host/earnings")}
+              className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 hover:border-emerald-500 hover:text-emerald-600 text-gray-700 font-bold rounded-2xl transition-all shadow-sm active:scale-95"
+            >
+              <TrendingUp size={20} />
+              <span className="text-sm">Thu nhập</span>
+            </button>
             <button
               onClick={() => navigate("/messages")}
               className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 hover:border-rose-500 hover:text-rose-500 text-gray-700 font-bold rounded-2xl transition-all shadow-sm active:scale-95"
