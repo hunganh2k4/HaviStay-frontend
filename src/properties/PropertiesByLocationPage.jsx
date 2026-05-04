@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Heart, Star, Map as MapIcon, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, Star, Filter, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Header from "../components/Header";
 import API_URL from "../config/config";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
@@ -24,7 +24,7 @@ let HighlightedIcon = L.icon({
   iconUrl: markerIcon,
   iconRetinaUrl: markerIconRetina,
   shadowUrl: markerShadow,
-  iconSize: [35, 51], // Larger
+  iconSize: [35, 51],
   iconAnchor: [17, 51],
   popupAnchor: [1, -44],
   className: "marker-highlighted",
@@ -32,7 +32,6 @@ let HighlightedIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Component to handle map centering
 function ChangeView({ center, zoom }) {
   const map = useMap();
   map.setView(center, zoom);
@@ -42,22 +41,28 @@ function ChangeView({ center, zoom }) {
 export default function PropertiesByLocationPage() {
   const { location } = useParams();
   const navigate = useNavigate();
-  const [properties, setProperties] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [allProperties, setAllProperties] = useState([]);
   const [wishlistIds, setWishlistIds] = useState(new Set());
+  const [isLoading, setIsLoading] = useState(true);
 
-  // New States for Pagination and Highlighting
+  // States for Pagination, Highlighting, and Filters
   const [currentPage, setCurrentPage] = useState(1);
   const [hoveredPropertyId, setHoveredPropertyId] = useState(null);
   const itemsPerPage = 10;
+
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000000 });
+  // Use string states to allow clearing input fields freely
+  const [priceMinInput, setPriceMinInput] = useState("0");
+  const [priceMaxInput, setPriceMaxInput] = useState("10000000");
+  const [selectedType, setSelectedType] = useState("Tất cả");
+  const [activeFilter, setActiveFilter] = useState(null); // 'price' or 'type'
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(`${API_URL}/properties`);
         const data = await response.json();
-        const filtered = data.filter(p => p.location?.toLowerCase().includes(location?.toLowerCase()));
-        setProperties(filtered);
+        setAllProperties(data);
 
         const userData = localStorage.getItem("user");
         if (userData) {
@@ -76,14 +81,55 @@ export default function PropertiesByLocationPage() {
       }
     };
     fetchData();
-  }, [location]);
+  }, []);
 
-  // Pagination Logic
-  const totalPages = Math.ceil(properties.length / itemsPerPage);
+  // Combined Filtering Logic
+  const filteredProperties = useMemo(() => {
+    return allProperties.filter(p => {
+      // 1. Location Match
+      const matchesLocation = p.location?.toLowerCase().includes(location?.toLowerCase()) ||
+        p.address?.toLowerCase().includes(location?.toLowerCase());
+      if (!matchesLocation) return false;
+
+      // 2. Price Match
+      const price = p.rooms?.[0]?.pricePerNight || 0;
+      const matchesPrice = price >= priceRange.min && price <= priceRange.max;
+      if (!matchesPrice) return false;
+
+      // 3. Type Match
+      if (selectedType !== "Tất cả") {
+        const matchesType = p.title?.toLowerCase().includes(selectedType.toLowerCase());
+        if (!matchesType) return false;
+      }
+
+      return true;
+    });
+  }, [allProperties, location, priceRange, selectedType]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [location, priceRange, selectedType]);
+
+  // Count active filters for badge
+  const activeFilterCount = [
+    priceRange.min > 0 || priceRange.max < 10000000,
+    selectedType !== "Tất cả",
+  ].filter(Boolean).length;
+
+  const resetAllFilters = () => {
+    setPriceRange({ min: 0, max: 10000000 });
+    setPriceMinInput("0");
+    setPriceMaxInput("10000000");
+    setSelectedType("Tất cả");
+    setActiveFilter(null);
+  };
+
+  const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
   const currentItems = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return properties.slice(startIndex, startIndex + itemsPerPage);
-  }, [properties, currentPage]);
+    return filteredProperties.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProperties, currentPage]);
 
   const toggleWishlist = async (e, propertyId) => {
     e.stopPropagation();
@@ -114,7 +160,7 @@ export default function PropertiesByLocationPage() {
   };
 
   const mapCenter = useMemo(() => {
-    const firstWithCoords = properties.find(p => p.latitude && p.longitude);
+    const firstWithCoords = filteredProperties.find(p => p.latitude && p.longitude);
     if (firstWithCoords) return [firstWithCoords.latitude, firstWithCoords.longitude];
 
     const locLower = location?.toLowerCase();
@@ -123,30 +169,143 @@ export default function PropertiesByLocationPage() {
     if (locLower?.includes("khánh hòa") || locLower?.includes("nha trang")) return [12.2388, 109.1967];
 
     return [14.0583, 108.2772];
-  }, [properties, location]);
+  }, [filteredProperties, location]);
+
+  const propertyTypes = ["Tất cả", "Căn hộ", "Homestay", "Villa", "Khách sạn", "Studio", "Nhà nghỉ", "Resort"];
 
   return (
-    <div className="bg-white min-h-screen text-gray-900 antialiased flex flex-col h-screen">
+    <div className="bg-white min-h-screen text-gray-900 antialiased flex flex-col h-screen overflow-hidden">
       <Header />
 
       {/* Filter Bar */}
-      <div className="px-6 py-4 border-b flex items-center justify-between bg-white z-10 sticky top-[80px] shadow-sm">
-        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
-          <button className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold hover:bg-gray-50 transition">
+      <div className="px-6 py-4 border-b flex items-center justify-between bg-white z-[1001] sticky top-[80px] shadow-sm overflow-visible">
+        <div className="flex items-center gap-4 overflow-visible relative">
+          <button className="relative flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold hover:bg-gray-50 transition shrink-0">
             <Filter size={16} /> Bộ lọc
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
-          <div className="h-6 w-px bg-gray-200 mx-2"></div>
-          <button className="px-4 py-2 border rounded-full text-sm font-medium hover:border-gray-900 transition whitespace-nowrap">Mức giá</button>
-          <button className="px-4 py-2 border rounded-full text-sm font-medium hover:border-gray-900 transition whitespace-nowrap">Loại chỗ ở</button>
-          <button className="px-4 py-2 border rounded-full text-sm font-medium hover:border-gray-900 transition whitespace-nowrap">Tiện nghi</button>
+          {activeFilterCount > 0 && (
+            <button
+              onClick={resetAllFilters}
+              className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-bold transition shrink-0"
+            >
+              <X size={12} /> Xóa lọc
+            </button>
+          )}
+          <div className="h-6 w-px bg-gray-200 mx-1 shrink-0"></div>
+
+          {/* Price Filter Button */}
+          <div className="relative">
+            <button
+              onClick={() => setActiveFilter(activeFilter === "price" ? null : "price")}
+              className={`px-4 py-2 border rounded-full text-sm font-medium transition whitespace-nowrap ${priceRange.max < 10000000 || priceRange.min > 0 ? "border-black bg-gray-50" : "hover:border-gray-900"}`}
+            >
+              Mức giá {(priceRange.max < 10000000 || priceRange.min > 0) && "•"}
+            </button>
+            {activeFilter === "price" && (
+              <div className="absolute top-12 left-0 w-80 bg-white border rounded-2xl shadow-2xl p-6 z-50">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-bold">Mức giá</h4>
+                  <button onClick={() => setActiveFilter(null)}><X size={16} /></button>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 p-2 border rounded-lg">
+                      <p className="text-[10px] text-gray-500 uppercase font-bold">Tối thiểu (₫)</p>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={priceMinInput}
+                        onChange={(e) => setPriceMinInput(e.target.value)}
+                        onBlur={() => {
+                          const val = parseInt(priceMinInput, 10);
+                          if (!isNaN(val)) setPriceRange(prev => ({ ...prev, min: val }));
+                          else setPriceMinInput(String(priceRange.min));
+                        }}
+                        className="w-full text-sm font-semibold outline-none"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="w-4 h-px bg-gray-300"></div>
+                    <div className="flex-1 p-2 border rounded-lg">
+                      <p className="text-[10px] text-gray-500 uppercase font-bold">Tối đa (₫)</p>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={priceMaxInput}
+                        onChange={(e) => setPriceMaxInput(e.target.value)}
+                        onBlur={() => {
+                          const val = parseInt(priceMaxInput, 10);
+                          if (!isNaN(val)) setPriceRange(prev => ({ ...prev, max: val }));
+                          else setPriceMaxInput(String(priceRange.max));
+                        }}
+                        className="w-full text-sm font-semibold outline-none"
+                        placeholder="10000000"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setPriceRange({ min: 0, max: 10000000 });
+                        setPriceMinInput("0");
+                        setPriceMaxInput("10000000");
+                      }}
+                      className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 transition"
+                    >
+                      Đặt lại
+                    </button>
+                    <button
+                      onClick={() => setActiveFilter(null)}
+                      className="flex-1 py-2 bg-black text-white rounded-lg text-sm font-bold"
+                    >
+                      Áp dụng
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Type Filter Button */}
+          <div className="relative">
+            <button
+              onClick={() => setActiveFilter(activeFilter === "type" ? null : "type")}
+              className={`px-4 py-2 border rounded-full text-sm font-medium transition whitespace-nowrap ${selectedType !== "Tất cả" ? "border-black bg-gray-50" : "hover:border-gray-900"}`}
+            >
+              Loại chỗ ở {selectedType !== "Tất cả" && `(${selectedType})`}
+            </button>
+            {activeFilter === "type" && (
+              <div className="absolute top-12 left-0 w-64 bg-white border rounded-2xl shadow-2xl p-4 z-50">
+                <div className="grid grid-cols-1 gap-1">
+                  {propertyTypes.map(type => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        setSelectedType(type);
+                        setActiveFilter(null);
+                      }}
+                      className={`text-left px-4 py-2 rounded-lg text-sm transition ${selectedType === type ? "bg-gray-100 font-bold" : "hover:bg-gray-50"}`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <div className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500">
-          Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, properties.length)} của {properties.length} kết quả
+          {filteredProperties.length} kết quả tại {location}
         </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: List (60% width) */}
+        {/* Left: List */}
         <div className="w-full lg:w-[60%] overflow-y-auto px-6 py-6 scroll-smooth bg-white">
           <div className="mb-4 flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider font-bold">
             <button onClick={() => navigate("/")} className="hover:text-rose-500 transition">Trang chủ</button>
@@ -162,14 +321,19 @@ export default function PropertiesByLocationPage() {
             <div className="flex flex-col items-center justify-center py-20">
               <div className="w-10 h-10 border-2 border-rose-100 border-t-rose-500 rounded-full animate-spin"></div>
             </div>
-          ) : properties.length === 0 ? (
-            <div className="py-20 text-center">
-              <h2 className="text-xl font-bold">Không tìm thấy chỗ ở nào</h2>
-              <p className="text-gray-500 mt-2">Vui lòng thử lại với khu vực khác.</p>
+          ) : filteredProperties.length === 0 ? (
+            <div className="py-20 text-center space-y-4">
+              <h2 className="text-xl font-bold">Không tìm thấy kết quả phù hợp</h2>
+              <p className="text-gray-500 mt-2">Thử thay đổi bộ lọc hoặc chọn khu vực khác.</p>
+              <button
+                onClick={resetAllFilters}
+                className="px-6 py-2 bg-black text-white rounded-full text-sm font-bold"
+              >
+                Xóa tất cả bộ lọc
+              </button>
             </div>
           ) : (
             <>
-              {/* Strictly 2 columns on medium+ screens */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-10 pb-10">
                 {currentItems.map((item) => (
                   <div
@@ -188,8 +352,8 @@ export default function PropertiesByLocationPage() {
                       <button
                         onClick={(e) => toggleWishlist(e, item.id)}
                         className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md shadow-md transition-all ${wishlistIds.has(item.id)
-                            ? "bg-rose-500 text-white"
-                            : "bg-white/80 text-gray-600 hover:text-rose-500"
+                          ? "bg-rose-500 text-white"
+                          : "bg-white/80 text-gray-600 hover:text-rose-500"
                           }`}
                       >
                         <Heart size={18} fill={wishlistIds.has(item.id) ? "currentColor" : "none"} />
@@ -213,7 +377,6 @@ export default function PropertiesByLocationPage() {
                 ))}
               </div>
 
-              {/* Pagination Controls */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-4 py-10 border-t border-gray-100">
                   <button
@@ -244,16 +407,12 @@ export default function PropertiesByLocationPage() {
                   </button>
                 </div>
               )}
-
-              <div className="pb-20 text-center text-xs text-gray-500">
-                Hiển thị {properties.length} kết quả tại {location}
-              </div>
             </>
           )}
         </div>
 
-        {/* Right: Map (40% width) */}
-        <div className="hidden lg:block lg:w-[40%] relative z-0">
+        {/* Right: Map */}
+        <div className="hidden lg:block lg:w-[40%] relative z-0 border-l">
           <MapContainer
             center={mapCenter}
             zoom={13}
@@ -265,7 +424,7 @@ export default function PropertiesByLocationPage() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {properties.map((p) => {
+            {filteredProperties.map((p) => {
               const isHovered = hoveredPropertyId === p.id;
               return p.latitude && p.longitude && (
                 <Marker

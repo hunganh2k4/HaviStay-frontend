@@ -12,7 +12,7 @@ export default function HomePage() {
   const [properties, setProperties] = useState([]);
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [isLoading, setIsLoading] = useState(true);
-  const [expandedSections, setExpandedSections] = useState({});
+  const [expandedSections] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -81,12 +81,6 @@ export default function HomePage() {
     }
   };
 
-  const toggleExpand = (location) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [location]: !prev[location]
-    }));
-  };
 
   const Section = ({ title, items, locationKey }) => {
     const isExpanded = expandedSections[locationKey];
