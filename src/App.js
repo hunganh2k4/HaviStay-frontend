@@ -65,6 +65,7 @@ function App() {
           <Route path="/trips" element={<MyTripsPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/messages" element={<ChatPage />} />
+          <Route path="/search" element={<PropertiesByLocationPage />} />
           <Route path="/search/:location" element={<PropertiesByLocationPage />} />
 
           {/* Bạn có thể thêm các route khác ở đây sau này */}

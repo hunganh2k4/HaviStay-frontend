@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Heart, Star, Filter, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Header from "../components/Header";
 import API_URL from "../config/config";
@@ -39,11 +39,28 @@ function ChangeView({ center, zoom }) {
 }
 
 export default function PropertiesByLocationPage() {
-  const { location } = useParams();
+  const { location: locationParam } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [allProperties, setAllProperties] = useState([]);
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [isLoading, setIsLoading] = useState(true);
+
+  // Resolve search context: prefer query params over URL param
+  const qLocation = searchParams.get("location") || locationParam || "";
+  const qCheckIn = searchParams.get("checkIn") || "";
+  const qCheckOut = searchParams.get("checkOut") || "";
+  const qGuests = parseInt(searchParams.get("guests") || "1", 10);
+
+  // Display label
+  const displayLocation = qLocation || "Tất cả";
+
+  // Build subtitle
+  const searchSummary = [
+    qCheckIn && `Nhận: ${qCheckIn}`,
+    qCheckOut && `Trả: ${qCheckOut}`,
+    qGuests > 1 && `${qGuests} khách`,
+  ].filter(Boolean).join("  ·  ");
 
   // States for Pagination, Highlighting, and Filters
   const [currentPage, setCurrentPage] = useState(1);
@@ -59,16 +76,22 @@ export default function PropertiesByLocationPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch(`${API_URL}/properties`);
+        // Build backend search URL
+        const params = new URLSearchParams();
+        if (qLocation) params.set("location", qLocation);
+        if (qCheckIn) params.set("checkIn", qCheckIn);
+        if (qCheckOut) params.set("checkOut", qCheckOut);
+        if (qGuests > 1) params.set("guests", String(qGuests));
+
+        const response = await fetch(`${API_URL}/properties/search?${params.toString()}`);
         const data = await response.json();
-        setAllProperties(data);
+        setAllProperties(Array.isArray(data) ? data : []);
 
         const userData = localStorage.getItem("user");
         if (userData) {
-          const wishResponse = await fetch(`${API_URL}/wishlists/my-wishlist`, {
-            credentials: "include",
-          });
+          const wishResponse = await fetch(`${API_URL}/wishlists/my-wishlist`, { credentials: "include" });
           if (wishResponse.ok) {
             const wishData = await wishResponse.json();
             setWishlistIds(new Set(wishData.map(item => item.id)));
@@ -81,22 +104,18 @@ export default function PropertiesByLocationPage() {
       }
     };
     fetchData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, locationParam]);
 
-  // Combined Filtering Logic
+  // Frontend price/type filters on top of backend results
   const filteredProperties = useMemo(() => {
     return allProperties.filter(p => {
-      // 1. Location Match
-      const matchesLocation = p.location?.toLowerCase().includes(location?.toLowerCase()) ||
-        p.address?.toLowerCase().includes(location?.toLowerCase());
-      if (!matchesLocation) return false;
-
-      // 2. Price Match
+      // Price Match
       const price = p.rooms?.[0]?.pricePerNight || 0;
       const matchesPrice = price >= priceRange.min && price <= priceRange.max;
       if (!matchesPrice) return false;
 
-      // 3. Type Match
+      // Type Match
       if (selectedType !== "Tất cả") {
         const matchesType = p.title?.toLowerCase().includes(selectedType.toLowerCase());
         if (!matchesType) return false;
@@ -104,26 +123,13 @@ export default function PropertiesByLocationPage() {
 
       return true;
     });
-  }, [allProperties, location, priceRange, selectedType]);
+  }, [allProperties, priceRange, selectedType]);
 
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [location, priceRange, selectedType]);
+  }, [priceRange, selectedType]);
 
-  // Count active filters for badge
-  const activeFilterCount = [
-    priceRange.min > 0 || priceRange.max < 10000000,
-    selectedType !== "Tất cả",
-  ].filter(Boolean).length;
-
-  const resetAllFilters = () => {
-    setPriceRange({ min: 0, max: 10000000 });
-    setPriceMinInput("0");
-    setPriceMaxInput("10000000");
-    setSelectedType("Tất cả");
-    setActiveFilter(null);
-  };
 
   const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
   const currentItems = useMemo(() => {
@@ -159,17 +165,31 @@ export default function PropertiesByLocationPage() {
     }
   };
 
+  // Count active filters for badge
+  const activeFilterCount = [
+    priceRange.min > 0 || priceRange.max < 10000000,
+    selectedType !== "Tất cả",
+  ].filter(Boolean).length;
+
+  const resetAllFilters = () => {
+    setPriceRange({ min: 0, max: 10000000 });
+    setPriceMinInput("0");
+    setPriceMaxInput("10000000");
+    setSelectedType("Tất cả");
+    setActiveFilter(null);
+  };
+
   const mapCenter = useMemo(() => {
     const firstWithCoords = filteredProperties.find(p => p.latitude && p.longitude);
     if (firstWithCoords) return [firstWithCoords.latitude, firstWithCoords.longitude];
 
-    const locLower = location?.toLowerCase();
+    const locLower = qLocation?.toLowerCase();
     if (locLower?.includes("hà nội")) return [21.0285, 105.8542];
     if (locLower?.includes("hồ chí minh") || locLower?.includes("hcm")) return [10.7765, 106.7009];
     if (locLower?.includes("khánh hòa") || locLower?.includes("nha trang")) return [12.2388, 109.1967];
 
     return [14.0583, 108.2772];
-  }, [filteredProperties, location]);
+  }, [filteredProperties, qLocation]);
 
   const propertyTypes = ["Tất cả", "Căn hộ", "Homestay", "Villa", "Khách sạn", "Studio", "Nhà nghỉ", "Resort"];
 
@@ -300,7 +320,7 @@ export default function PropertiesByLocationPage() {
           </div>
         </div>
         <div className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500">
-          {filteredProperties.length} kết quả tại {location}
+          {filteredProperties.length} kết quả tại {displayLocation}
         </div>
       </div>
 
@@ -310,16 +330,20 @@ export default function PropertiesByLocationPage() {
           <div className="mb-4 flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider font-bold">
             <button onClick={() => navigate("/")} className="hover:text-rose-500 transition">Trang chủ</button>
             <span>/</span>
-            <span className="text-gray-900">{location}</span>
+            <span className="text-gray-900">{displayLocation}</span>
           </div>
 
-          <h1 className="text-2xl font-bold mb-8">
-            Chỗ ở tại {location}
+          <h1 className="text-2xl font-bold mb-1">
+            Chỗ ở tại {displayLocation}
           </h1>
+          {searchSummary && (
+            <p className="text-sm text-gray-500 mb-6">{searchSummary}</p>
+          )}
 
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="w-10 h-10 border-2 border-rose-100 border-t-rose-500 rounded-full animate-spin"></div>
+              <p className="text-gray-400 text-sm mt-4">Đang tìm kiếm...</p>
             </div>
           ) : filteredProperties.length === 0 ? (
             <div className="py-20 text-center space-y-4">
