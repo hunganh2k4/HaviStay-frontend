@@ -17,6 +17,8 @@ import {
   Link,
   Check,
   X,
+  Minus,
+  Plus,
 } from "lucide-react";
 import Header from "../components/Header";
 import { useParams, useNavigate } from "react-router-dom";
@@ -34,6 +36,7 @@ export default function PropertyDetailPage() {
   const [reviews, setReviews] = useState([]);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedServices, setSelectedServices] = useState({}); // { serviceId: quantity }
   const shareRef = useRef(null);
 
   // Close share dropdown on outside click
@@ -135,6 +138,18 @@ export default function PropertyDetailPage() {
     }
   };
 
+  const updateServiceQuantity = (serviceId, delta) => {
+    setSelectedServices(prev => {
+      const current = prev[serviceId] || 0;
+      const next = Math.max(0, current + delta);
+      return { ...prev, [serviceId]: next };
+    });
+  };
+
+  const servicesTotal = property?.services?.reduce((acc, service) => {
+    return acc + (service.price * (selectedServices[service.id] || 0));
+  }, 0) || 0;
+
   const handleBooking = async () => {
     const userData = localStorage.getItem("user");
     if (!userData) {
@@ -158,6 +173,12 @@ export default function PropertyDetailPage() {
           checkIn: `2026-05-${startDate.toString().padStart(2, '0')}`,
           checkOut: `2026-05-${endDate.toString().padStart(2, '0')}`,
           guestsCount: 1, // Default for now
+          selectedServices: Object.entries(selectedServices)
+            .filter(([_, qty]) => qty > 0)
+            .map(([serviceId, quantity]) => ({
+              serviceId,
+              quantity
+            })),
         }),
       });
 
@@ -455,6 +476,57 @@ export default function PropertyDetailPage() {
               </div>
             </div>
 
+            {/* SERVICES SECTION */}
+            {property?.services?.length > 0 && (
+              <div className="py-8 border-b">
+                <h2 className="text-xl font-bold mb-6">Dịch vụ kèm theo</h2>
+                <div className="space-y-4">
+                  {property.services.map((service) => (
+                    <div key={service.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-2xl hover:border-emerald-100 transition-colors bg-gray-50/30">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                          <img 
+                            src={service.images && service.images.length > 0 ? service.images[0] : "https://images.unsplash.com/photo-1540331547168-8b63109225b7?q=80&w=400"} 
+                            alt={service.name} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-sm text-gray-900">{service.name}</h3>
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-1">{service.description}</p>
+                          <p className="text-sm font-bold text-emerald-600 mt-1">
+                            {service.price > 0 ? formatPrice(service.price) : "Miễn phí"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 ml-6">
+                        <button 
+                          onClick={() => updateServiceQuantity(service.id, -1)}
+                          disabled={!selectedServices[service.id]}
+                          className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
+                            selectedServices[service.id] 
+                              ? "border-emerald-500 text-emerald-500 hover:bg-emerald-50" 
+                              : "border-gray-200 text-gray-300"
+                          }`}
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="w-4 text-center font-bold text-sm">
+                          {selectedServices[service.id] || 0}
+                        </span>
+                        <button 
+                          onClick={() => updateServiceQuantity(service.id, 1)}
+                          className="w-8 h-8 rounded-full border border-emerald-500 text-emerald-500 hover:bg-emerald-50 flex items-center justify-center transition-all"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* AMENITIES */}
             <div className="py-8 border-b">
               <h2 className="text-xl font-bold mb-6">Nơi này có những gì cho bạn</h2>
@@ -615,9 +687,19 @@ export default function PropertyDetailPage() {
                       <span className="underline">{formatPrice(selectedRoom.pricePerNight)} x {nights} đêm</span>
                       <span>{formatPrice(selectedRoom.pricePerNight * nights)}</span>
                     </div>
+                    {property?.services?.map(service => {
+                      const qty = selectedServices[service.id] || 0;
+                      if (qty <= 0) return null;
+                      return (
+                        <div key={service.id} className="flex justify-between text-sm">
+                          <span className="underline">{service.name} x {qty}</span>
+                          <span>{formatPrice(service.price * qty)}</span>
+                        </div>
+                      );
+                    })}
                     <div className="flex justify-between text-base font-bold pt-3 border-t border-gray-100 mt-3">
                       <span>Tổng tiền</span>
-                      <span>{formatPrice(selectedRoom.pricePerNight * nights + (selectedRoom.cleaningFee || 0))}</span>
+                      <span>{formatPrice(selectedRoom.pricePerNight * nights + (selectedRoom.cleaningFee || 0) + servicesTotal)}</span>
                     </div>
                   </div>
                 )}

@@ -12,6 +12,7 @@ import {
   EyeOff,
   MessageSquare,
   TrendingUp,
+  Tag,
 } from "lucide-react";
 import API_URL from "../config/config";
 import Header from "../components/Header";
@@ -281,6 +282,13 @@ export default function ManagePropertiesPage() {
                   >
                     <Settings size={14} />
                     <span>Phòng</span>
+                  </button>
+                  <button
+                    onClick={() => navigate(`/host/properties/${property.id}/services`)}
+                    className="flex items-center gap-2 px-4 py-2 text-[11px] font-bold text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all border border-transparent hover:border-emerald-100"
+                  >
+                    <Tag size={14} />
+                    <span>Dịch vụ</span>
                   </button>
                   <button
                     onClick={() => handleDelete(property.id)}

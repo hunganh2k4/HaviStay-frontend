@@ -9,6 +9,7 @@ import ManagePropertiesPage from "./properties/ManagePropertiesPage";
 import CreatePropertyPage from "./properties/CreatePropertyPage";
 import EditPropertyPage from "./properties/EditPropertyPage";
 import ManageRoomsPage from "./properties/ManageRoomsPage";
+import ManageServicesPage from "./properties/ManageServicesPage";
 import AdminDashboard from "./admin/AdminDashboard";
 import PaymentResultPage from "./payments/PaymentResultPage";
 import MyTripsPage from "./trips/MyTripsPage";
@@ -60,6 +61,7 @@ function App() {
           <Route path="/host/properties/create" element={<CreatePropertyPage />} />
           <Route path="/host/properties/:id/edit" element={<EditPropertyPage />} />
           <Route path="/host/properties/:id/rooms" element={<ManageRoomsPage />} />
+          <Route path="/host/properties/:id/services" element={<ManageServicesPage />} />
           <Route path="/host/earnings" element={<EarningsPage />} />
 
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
